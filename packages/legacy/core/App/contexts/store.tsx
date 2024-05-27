@@ -2,6 +2,7 @@ import React, { createContext, Dispatch, useContext, useReducer } from 'react'
 
 import { State } from '../types/state'
 import { generateRandomWalletName } from '../utils/helpers'
+import { VerificationID } from '../verification'
 
 import _defaultReducer, { ReducerAction } from './reducers/store'
 
@@ -44,6 +45,7 @@ export const defaultState: State = {
     developerModeEnabled: false,
     biometryPreferencesUpdated: false,
     useBiometry: false,
+    verification: VerificationID.QRCode,
     usePushNotifications: false,
     useVerifierCapability: false,
     useConnectionInviterCapability: false,

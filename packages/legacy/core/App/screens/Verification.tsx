@@ -1,0 +1,99 @@
+import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { FlatList, StyleSheet, Text, View } from 'react-native'
+import BouncyCheckbox from 'react-native-bouncy-checkbox'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import Icon from 'react-native-vector-icons/MaterialIcons'
+
+import { useConfiguration } from '../contexts/configuration'
+import { useTheme } from '../contexts/theme'
+import { VerificationID, storeVerification, currentVerification } from '../verification'
+import { testIdWithKey } from '../utils/testable'
+import { useStore } from '../contexts/store'
+
+interface Verification {
+  id: VerificationID
+  value: string
+}
+
+const Verification = () => {
+  const { i18n } = useTranslation()
+  const { ColorPallet, TextTheme, SettingsTheme } = useTheme()
+  const { supportedVerifications } = useConfiguration()
+  const [store, dispatch] = useStore()
+  const [verification, setVerification] = useState(VerificationID.QRCode)
+
+  const verifications: Verification[] = supportedVerifications.map((v) => ({
+    id: v,
+    value: i18n.t(`Verification.${v}`),
+  }))
+
+  const styles = StyleSheet.create({
+    container: {
+      backgroundColor: ColorPallet.brand.primaryBackground,
+      width: '100%',
+    },
+    section: {
+      backgroundColor: SettingsTheme.groupBackground,
+      paddingHorizontal: 25,
+      paddingVertical: 16,
+    },
+    sectionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    itemSeparator: {
+      borderBottomWidth: 1,
+      borderBottomColor: ColorPallet.brand.primaryBackground,
+      marginHorizontal: 25,
+    },
+  })
+
+  /**
+   * Once user select the particular verification from the list,
+   * store user preference into the AsyncStorage
+   *
+   * @param {BlockSelection} verification
+   */
+  const handleVerificationChange = async (verification: Verification) => {
+    await storeVerification(verification.id)
+    setVerification(verification.id)
+  }
+
+  return (
+    <SafeAreaView style={[styles.container]}>
+      <FlatList
+        data={verifications}
+        renderItem={({ item: verification }) => {
+          const { id, value }: Verification = verification
+          return (
+            <View style={[styles.section, styles.sectionRow]}>
+              <Text style={[TextTheme.title]}>{value}</Text>
+              <BouncyCheckbox
+                accessibilityLabel={value}
+                disableText
+                fillColor={ColorPallet.brand.secondaryBackground}
+                unfillColor={ColorPallet.brand.secondaryBackground}
+                size={36}
+                innerIconStyle={{ borderColor: ColorPallet.brand.primary, borderWidth: 2 }}
+                ImageComponent={() => <Icon name="circle" size={18} color={ColorPallet.brand.primary}></Icon>}
+                onPress={async () => await handleVerificationChange(verification)}
+                isChecked={id === currentVerification}
+                disableBuiltInState
+                testID={testIdWithKey(id)}
+              />
+            </View>
+          )
+        }}
+        ItemSeparatorComponent={() => (
+          <View style={{ backgroundColor: SettingsTheme.groupBackground }}>
+            <View style={[styles.itemSeparator]}></View>
+          </View>
+        )}
+      />
+    </SafeAreaView>
+  )
+}
+
+export default Verification

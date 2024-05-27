@@ -1,5 +1,5 @@
 import { StackScreenProps } from '@react-navigation/stack'
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ScrollView,
@@ -153,6 +153,16 @@ const Settings: React.FC<SettingsProps> = ({ navigation }) => {
           accessibilityLabel: t('Settings.Language'),
           testID: testIdWithKey('Language'),
           onPress: () => navigation.navigate(Screens.Language),
+        },
+        {
+          title: 'Verification',
+          value: store.preferences.verification,
+          accessibilityLabel: 'Verification',
+          testID: testIdWithKey('Verification'),
+          onPress: () => {
+            console.log(store.preferences.verification)
+            navigation.navigate(Screens.Verification)
+          },
         },
       ],
     },

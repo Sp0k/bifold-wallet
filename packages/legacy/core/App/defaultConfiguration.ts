@@ -6,6 +6,7 @@ import { PINRules } from './constants'
 import { ConfigurationContext } from './contexts/configuration'
 import { useNotifications } from './hooks/notifications'
 import { Locales, translationResources } from './localization'
+import { VerificationID, verificationResources } from './verification'
 import Developer from './screens/Developer'
 import OnboardingPages from './screens/OnboardingPages'
 import Preface from './screens/Preface'
@@ -39,6 +40,7 @@ export const defaultConfiguration: ConfigurationContext = {
   },
   enableTours: false,
   supportedLanguages: Object.keys(translationResources) as Locales[],
+  supportedVerifications: Object.keys(verificationResources) as VerificationID[],
   showPreface: false,
   disableOnboardingSkip: false,
   useCustomNotifications: useNotifications,

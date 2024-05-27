@@ -246,7 +246,7 @@ const Splash: React.FC = () => {
 
         newAgent.registerOutboundTransport(bleOutboundTransport)
 
-        //  TODO: Add a setting  to switch between BLE and default (ws and http)
+        //  TODO: Add a setting to switch between BLE and default (ws and http)
 
         // const wsTransport = new WsOutboundTransport()
         // const httpTransport = new HttpOutboundTransport()
