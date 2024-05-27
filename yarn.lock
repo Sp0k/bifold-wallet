@@ -50,6 +50,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@animo-id/react-native-ble-didcomm@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "@animo-id/react-native-ble-didcomm@npm:0.8.0"
+  dependencies:
+    buffer: ^6.0.3
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 0aed37d8ce22031fc52fdd14ceff0bf4a9bf49e4cf82c353df4c824e839f1988b94285c6033bbadf3c81df7b8d646b7090ada913670c3b35f6de994e9e446468
+  languageName: node
+  linkType: hard
+
 "@astronautlabs/jsonpath@npm:^1.1.2":
   version: 1.1.2
   resolution: "@astronautlabs/jsonpath@npm:1.1.2"
@@ -3761,7 +3773,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@credo-ts/core@npm:0.5.3":
+"@credo-ts/core@npm:0.5.3, @credo-ts/core@npm:^0.5.3":
   version: 0.5.3
   resolution: "@credo-ts/core@npm:0.5.3"
   dependencies:
@@ -3893,7 +3905,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@credo-ts/react-native@npm:0.5.3":
+"@credo-ts/react-native@npm:0.5.3, @credo-ts/react-native@npm:^0.5.3":
   version: 0.5.3
   resolution: "@credo-ts/react-native@npm:0.5.3"
   dependencies:
@@ -3905,6 +3917,17 @@ __metadata:
     react-native-fs: ^2.20.0
     react-native-get-random-values: ^1.8.0
   checksum: f559dce55283378d8ef7e010064628315628058349c07b68e7302fc65b4ba36ede0d6c44a645503c775c514b42aba6d8f6896af8fea6ffa355f3d15a89b75daf
+  languageName: node
+  linkType: hard
+
+"@credo-ts/transport-ble@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "@credo-ts/transport-ble@npm:0.3.0"
+  peerDependencies:
+    "@animo-id/react-native-ble-didcomm": ^0.5.1
+    "@credo-ts/core": ^0.5.0
+    react-native: ">=0.60.6"
+  checksum: e7bb046102702b3abc1fabad96686e78e3ecd299de9b94ea4092c6bd2e243450fede19038bf5b030a2c8b61599019b52330fba45513de3901b1a4ef702a9649e
   languageName: node
   linkType: hard
 
@@ -4426,6 +4449,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@hyperledger/aries-bifold-core@workspace:packages/legacy/core"
   dependencies:
+    "@animo-id/react-native-ble-didcomm": ^0.8.0
     "@babel/core": ^7.20.0
     "@babel/runtime": ^7.20.0
     "@commitlint/cli": ^11.0.0
@@ -4438,6 +4462,7 @@ __metadata:
     "@credo-ts/question-answer": 0.5.3
     "@credo-ts/react-hooks": ^0.6.0
     "@credo-ts/react-native": 0.5.3
+    "@credo-ts/transport-ble": ^0.3.0
     "@formatjs/intl-datetimeformat": 4.2.4
     "@formatjs/intl-displaynames": 5.2.4
     "@formatjs/intl-getcanonicallocales": 1.7.3
@@ -8288,18 +8313,20 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "aries-bifold-app@workspace:packages/legacy/app"
   dependencies:
+    "@animo-id/react-native-ble-didcomm": ^0.8.0
     "@babel/core": ^7.20.0
     "@babel/preset-env": ^7.20.0
     "@babel/runtime": ^7.20.0
     "@credo-ts/anoncreds": 0.5.3
     "@credo-ts/askar": 0.5.3
-    "@credo-ts/core": 0.5.3
+    "@credo-ts/core": ^0.5.3
     "@credo-ts/indy-sdk-to-askar-migration": 0.5.3
     "@credo-ts/indy-vdr": 0.5.3
     "@credo-ts/push-notifications": ^0.7.0
     "@credo-ts/question-answer": 0.5.3
     "@credo-ts/react-hooks": ^0.6.0
-    "@credo-ts/react-native": 0.5.3
+    "@credo-ts/react-native": ^0.5.3
+    "@credo-ts/transport-ble": ^0.3.0
     "@formatjs/intl-datetimeformat": 4.2.4
     "@formatjs/intl-displaynames": 5.2.4
     "@formatjs/intl-getcanonicallocales": 1.7.3
@@ -8386,6 +8413,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "aries-bifold-root@workspace:."
   dependencies:
+    "@animo-id/react-native-ble-didcomm": ^0.8.0
+    "@credo-ts/core": ^0.5.3
+    "@credo-ts/react-native": ^0.5.3
+    "@credo-ts/transport-ble": ^0.3.0
     "@react-native-community/eslint-config": ^3.2.0
     "@types/conventional-recommended-bump": ^6.1.0
     "@typescript-eslint/eslint-plugin": ^6.6.0
