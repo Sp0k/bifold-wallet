@@ -1,3 +1,5 @@
+import { VerificationID } from '../verification'
+
 export interface Onboarding {
   didSeePreface: boolean
   didCompleteTutorial: boolean
@@ -17,6 +19,7 @@ export interface Migration {
 
 export interface Preferences {
   useBiometry: boolean
+  verification: VerificationID
   usePushNotifications: boolean
   biometryPreferencesUpdated: boolean
   developerModeEnabled: boolean

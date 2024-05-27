@@ -77,6 +77,10 @@ const translation = {
         "code_fr": "Français",
         "code_pt-BR": "Portugais",
     },
+    "Verification": {
+      "Bluetooth": "Bluetooth",
+      "QRCode": "Code QR",
+    },
     "Error": {
         "ReportThisProblem": "Report this problem (FR)",
         "Unknown": "Erreur inconnue",

@@ -20,6 +20,7 @@ export enum Screens {
   ProofRequestUsageHistory = 'Proof Request Usage History',
   Settings = 'Settings',
   Language = 'Language',
+  Verification = 'Verification',
   DataRetention = 'Data Retention',
   Tours = 'Tours',
   Contacts = 'Contacts',
@@ -139,6 +140,7 @@ export type SettingStackParams = {
   [Screens.NameWallet]: undefined
   [Screens.Settings]: undefined
   [Screens.Language]: undefined
+  [Screens.Verification]: undefined
   [Screens.DataRetention]: undefined
   [Screens.Tours]: undefined
   [Screens.UseBiometry]: undefined

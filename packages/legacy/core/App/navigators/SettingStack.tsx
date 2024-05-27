@@ -8,6 +8,7 @@ import { useConfiguration } from '../contexts/configuration'
 import { useTheme } from '../contexts/theme'
 import DataRetention from '../screens/DataRetention'
 import Language from '../screens/Language'
+import Verification from '../screens/Verification'
 import NameWallet from '../screens/NameWallet'
 import Onboarding from '../screens/Onboarding'
 import { createCarouselStyle } from '../screens/OnboardingPages'
@@ -57,6 +58,11 @@ const SettingStack: React.FC = () => {
         name={Screens.Language}
         component={Language}
         options={{ title: t('Screens.Language'), headerBackTestID: testIdWithKey('Back') }}
+      />
+      <Stack.Screen
+        name={Screens.Verification}
+        component={Verification}
+        options={{ title: 'Verification', headerBackTestID: testIdWithKey('Back') }}
       />
       <Stack.Screen
         name={Screens.DataRetention}
