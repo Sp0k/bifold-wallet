@@ -224,5 +224,9 @@
       "module",
       "typescript"
     ]
+  },
+  "dependencies": {
+    "@animo-id/react-native-ble-didcomm": "^0.8.0",
+    "@credo-ts/transport-ble": "^0.3.0"
   }
 }
