@@ -6,6 +6,7 @@ import { ReducerAction, createContext, useContext } from 'react'
 import { EmptyListProps } from '../components/misc/EmptyList'
 import { RecordProps } from '../components/record/Record'
 import { Locales } from '../localization'
+import { VerificationID } from '../verification'
 import OnboardingPages from '../screens/OnboardingPages'
 import { GetCredentialHelpEntry } from '../types/get-credential-help'
 import { ConnectStackParams } from '../types/navigators'
@@ -48,6 +49,7 @@ export interface ConfigurationContext {
   settings: SettingSection[]
   customNotification: NotificationConfiguration
   supportedLanguages: Locales[]
+  supportedVerifications: VerificationID[]
   connectionTimerDelay?: number
   autoRedirectConnectionToHome?: boolean
   proofRequestTemplates?: (useDevTemplates: boolean) => Array<ProofRequestTemplate>
