@@ -23,6 +23,7 @@ import { ThemeProvider } from './contexts/theme'
 import { TourProvider } from './contexts/tour/tour-provider'
 import { defaultConfiguration } from './defaultConfiguration'
 import { initLanguages, initStoredLanguage, translationResources } from './localization'
+import { initStoredVerification } from './verification'
 import RootStack from './navigators/RootStack'
 import { theme } from './theme'
 //import { credentialOfferTourSteps, credentialsTourSteps, proofRequestTourSteps } from './index'
@@ -33,6 +34,7 @@ function App(sytem: Container) {
   return () => {
     useMemo(() => {
       initStoredLanguage().then()
+      initStoredVerification().then()
     }, [])
 
     useEffect(() => {

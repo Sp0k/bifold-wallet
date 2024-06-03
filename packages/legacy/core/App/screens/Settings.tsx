@@ -1,5 +1,5 @@
 import { StackScreenProps } from '@react-navigation/stack'
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ScrollView,
@@ -32,6 +32,7 @@ const touchCountToEnableBiometrics = 9
 const Settings: React.FC<SettingsProps> = ({ navigation }) => {
   const { t, i18n } = useTranslation()
   const [store, dispatch] = useStore()
+  const [verificationState, setVerificationState] = useState(store.preferences.verification)
   const developerOptionCount = useRef(0)
   const { SettingsTheme, TextTheme, ColorPallet, Assets } = useTheme()
   const { settings, enableTours, enablePushNotifications } = useConfiguration()
@@ -73,6 +74,10 @@ const Settings: React.FC<SettingsProps> = ({ navigation }) => {
       alignItems: 'center',
     },
   })
+
+  useEffect(() => {
+    setVerificationState(store.preferences.verification)
+  }, [store.preferences.verification])
 
   const currentLanguage = i18n.t('Language.code', { context: i18n.language as Locales })
   const incrementDeveloperMenuCounter = () => {
@@ -160,7 +165,7 @@ const Settings: React.FC<SettingsProps> = ({ navigation }) => {
           accessibilityLabel: 'Verification',
           testID: testIdWithKey('Verification'),
           onPress: () => {
-            console.log(store.preferences.verification)
+            // console.log(store.preferences.verification)
             navigation.navigate(Screens.Verification)
           },
         },

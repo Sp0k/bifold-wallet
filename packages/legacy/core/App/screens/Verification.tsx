@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallBack } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, StyleSheet, Text, View } from 'react-native'
 import BouncyCheckbox from 'react-native-bouncy-checkbox'
@@ -10,18 +10,27 @@ import { useTheme } from '../contexts/theme'
 import { VerificationID, storeVerification, currentVerification } from '../verification'
 import { testIdWithKey } from '../utils/testable'
 import { useStore } from '../contexts/store'
+import { initAgent } from '../screens/Splash'
 
 interface Verification {
   id: VerificationID
   value: string
 }
 
-const Verification = () => {
+const Verification = ({ navigation }) => {
+  useEffect(() => {
+    console.log(store.preferences.verification)
+
+    return () => {
+      console.log(store.preferences.verification)
+    }
+  }, [])
+
   const { i18n } = useTranslation()
   const { ColorPallet, TextTheme, SettingsTheme } = useTheme()
   const { supportedVerifications } = useConfiguration()
   const [store, dispatch] = useStore()
-  const [verification, setVerification] = useState(VerificationID.QRCode)
+  const [verification, setVerification] = useState(store.preferences.verification)
 
   const verifications: Verification[] = supportedVerifications.map((v) => ({
     id: v,
@@ -56,10 +65,20 @@ const Verification = () => {
    *
    * @param {BlockSelection} verification
    */
-  const handleVerificationChange = async (verification: Verification) => {
-    await storeVerification(verification.id)
-    setVerification(verification.id)
+  const handleVerificationChange = async (verif: Verification) => {
+    console.log('1. ' + verification)
+    setVerification(verif.id)
+    store.preferences.verification = verification
+    console.log('2. ' + store.preferences.verification)
+    console.log('3. ' + verification)
+    await initAgent()
+    console.log('init agent')
   }
+
+  // const updateStoredVerification = async () => {
+  //   await storeVerification(verification)
+  //   store.preferences.verification = verification
+  // }
 
   return (
     <SafeAreaView style={[styles.container]}>
@@ -78,7 +97,7 @@ const Verification = () => {
                 size={36}
                 innerIconStyle={{ borderColor: ColorPallet.brand.primary, borderWidth: 2 }}
                 ImageComponent={() => <Icon name="circle" size={18} color={ColorPallet.brand.primary}></Icon>}
-                onPress={async () => await handleVerificationChange(verification)}
+                onPress={() => handleVerificationChange(verification)}
                 isChecked={id === currentVerification}
                 disableBuiltInState
                 testID={testIdWithKey(id)}
