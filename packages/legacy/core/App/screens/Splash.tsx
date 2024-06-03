@@ -1,7 +1,6 @@
 import { BleOutboundTransport } from '@credo-ts/transport-ble'
 import { Peripheral } from '@animo-id/react-native-ble-didcomm'
-// import { Agent, HttpOutboundTransport, WsOutboundTransport } from '@credo-ts/core'
-import { Agent } from '@credo-ts/core'
+import { Agent, HttpOutboundTransport, WsOutboundTransport } from '@credo-ts/core'
 import { useAgent } from '@credo-ts/react-hooks'
 import { agentDependencies } from '@credo-ts/react-native'
 import { useNavigation } from '@react-navigation/core'
@@ -25,6 +24,7 @@ import { Screens, Stacks } from '../types/navigators'
 import { Onboarding as StoreOnboardingState } from '../types/state'
 import { getAgentModules, createLinkSecretIfRequired } from '../utils/agent'
 import { migrateToAskar, didMigrateToAskar } from '../utils/migration'
+import { VerificationID } from '../verification'
 
 const OnboardingVersion = 1
 
@@ -204,90 +204,90 @@ const Splash: React.FC = () => {
     initOnboarding()
   }, [mounted, store.authentication.didAuthenticate, store.stateLoaded])
 
+  const initAgent = async (): Promise<void> => {
+    try {
+      const credentials = await getWalletCredentials()
+
+      if (!credentials?.id || !credentials.key) {
+        // Cannot find wallet id/secret
+        return
+      }
+
+      const newAgent = new Agent({
+        config: {
+          label: store.preferences.walletName || 'Aries Bifold',
+          walletConfig: {
+            id: credentials.id,
+            key: credentials.key,
+          },
+          logger,
+          autoUpdateStorageOnStartup: true,
+        },
+        dependencies: agentDependencies,
+        modules: getAgentModules({
+          indyNetworks: indyLedgers,
+          mediatorInvitationUrl: Config.MEDIATOR_URL,
+        }),
+      })
+
+      if (store.preferences.verification === VerificationID.Bluetooth) {
+        console.log('Now using Bluetooth')
+        const peripheral = new Peripheral()
+        await peripheral.start()
+        const bleOutboundTransport = new BleOutboundTransport(peripheral)
+
+        newAgent.registerOutboundTransport(bleOutboundTransport)
+      } else {
+        console.log('Now using HTTP')
+        const wsTransport = new WsOutboundTransport()
+        const httpTransport = new HttpOutboundTransport()
+
+        newAgent.registerOutboundTransport(wsTransport)
+        newAgent.registerOutboundTransport(httpTransport)
+      }
+
+      // If we haven't migrated to Aries Askar yet, we need to do this before we initialize the agent.
+      if (!didMigrateToAskar(store.migration)) {
+        newAgent.config.logger.debug('Agent not updated to Aries Askar, updating...')
+
+        await migrateToAskar(credentials.id, credentials.key, newAgent)
+
+        newAgent.config.logger.debug('Successfully finished updating agent to Aries Askar')
+        // Store that we migrated to askar.
+        dispatch({
+          type: DispatchAction.DID_MIGRATE_TO_ASKAR,
+        })
+      }
+
+      await newAgent.initialize()
+
+      await createLinkSecretIfRequired(newAgent)
+
+      setAgent(newAgent)
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: Stacks.TabStack }],
+        })
+      )
+    } catch (err: unknown) {
+      const error = new BifoldError(t('Error.Title1045'), t('Error.Message1045'), (err as Error)?.message ?? err, 1045)
+      DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
+    }
+  }
+
   useEffect(() => {
     if (!mounted || !store.authentication.didAuthenticate || !store.onboarding.didConsiderBiometry) {
       return
     }
 
-    const initAgent = async (): Promise<void> => {
-      try {
-        const credentials = await getWalletCredentials()
-
-        if (!credentials?.id || !credentials.key) {
-          // Cannot find wallet id/secret
-          return
-        }
-
-        const newAgent = new Agent({
-          config: {
-            label: store.preferences.walletName || 'Aries Bifold',
-            walletConfig: {
-              id: credentials.id,
-              key: credentials.key,
-            },
-            logger,
-            autoUpdateStorageOnStartup: true,
-          },
-          dependencies: agentDependencies,
-          modules: getAgentModules({
-            indyNetworks: indyLedgers,
-            mediatorInvitationUrl: Config.MEDIATOR_URL,
-          }),
-        })
-
-        const peripheral = new Peripheral()
-
-        await peripheral.start()
-
-        const bleOutboundTransport = new BleOutboundTransport(peripheral)
-
-        newAgent.registerOutboundTransport(bleOutboundTransport)
-
-        //  TODO: Add a setting to switch between BLE and default (ws and http)
-
-        // const wsTransport = new WsOutboundTransport()
-        // const httpTransport = new HttpOutboundTransport()
-        //
-        // newAgent.registerOutboundTransport(wsTransport)
-        // newAgent.registerOutboundTransport(httpTransport)
-
-        // If we haven't migrated to Aries Askar yet, we need to do this before we initialize the agent.
-        if (!didMigrateToAskar(store.migration)) {
-          newAgent.config.logger.debug('Agent not updated to Aries Askar, updating...')
-
-          await migrateToAskar(credentials.id, credentials.key, newAgent)
-
-          newAgent.config.logger.debug('Successfully finished updating agent to Aries Askar')
-          // Store that we migrated to askar.
-          dispatch({
-            type: DispatchAction.DID_MIGRATE_TO_ASKAR,
-          })
-        }
-
-        await newAgent.initialize()
-
-        await createLinkSecretIfRequired(newAgent)
-
-        setAgent(newAgent)
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: Stacks.TabStack }],
-          })
-        )
-      } catch (err: unknown) {
-        const error = new BifoldError(
-          t('Error.Title1045'),
-          t('Error.Message1045'),
-          (err as Error)?.message ?? err,
-          1045
-        )
-        DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
-      }
-    }
-
     initAgent()
-  }, [mounted, store.authentication.didAuthenticate, store.onboarding.didConsiderBiometry])
+  }, [
+    mounted,
+    store.authentication.didAuthenticate,
+    store.onboarding.didConsiderBiometry,
+    store.preferences.verification,
+  ])
 
   return (
     <SafeAreaView style={styles.container}>
@@ -296,4 +296,4 @@ const Splash: React.FC = () => {
   )
 }
 
-export default Splash
+export default { Splash, initAgent }
