@@ -29,6 +29,7 @@ const storeVerification = async (id: string) => {
 
 //** Fetch user preference language from the AsyncStorage and set if require  */
 const initStoredVerification = async () => {
+  console.log('Hello')
   const verificationId = await AsyncStorage.getItem('verification')
   if (verificationId && verificationId !== currentVerification) {
     currentVerification = verificationId as VerificationID
