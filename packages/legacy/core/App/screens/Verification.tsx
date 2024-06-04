@@ -76,7 +76,7 @@ const Verification = () => {
 		setVerification(verif.id)
 		store.preferences.verification = verification
 		unregisterAllOutboundTransports(agent)
-		registerOutboundTransport(agent, verif.id)
+		await registerOutboundTransport(agent, verif.id)
 		console.log("hello")
 	} else {
 		console.log("error agent is not initialized")
