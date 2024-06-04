@@ -6,13 +6,14 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import { useContainer } from '../container-api'
 import { useNavigation } from '@react-navigation/core'
+import { useAgent } from '@credo-ts/react-hooks'
 
 import { useConfiguration } from '../contexts/configuration'
 import { useTheme } from '../contexts/theme'
 import { VerificationID, storeVerification, currentVerification } from '../verification'
 import { testIdWithKey } from '../utils/testable'
 import { useStore } from '../contexts/store'
-import { initAgent } from '../screens/Splash'
+import { unregisterAllOutboundTransports, registerOutboundTransport } from './Splash'
 
 interface Verification {
   id: VerificationID
@@ -32,6 +33,7 @@ const Verification = () => {
   const { ColorPallet, TextTheme, SettingsTheme } = useTheme()
   const { supportedVerifications } = useConfiguration()
   const [store, dispatch] = useStore()
+  const { agent } = useAgent();
   const container = useContainer();
   const navigation = useNavigation();
   const [verification, setVerification] = useState(store.preferences.verification)
@@ -70,13 +72,15 @@ const Verification = () => {
    * @param {BlockSelection} verification
    */
   const handleVerificationChange = async (verif: Verification) => {
-    console.log('1. ' + verification)
-    setVerification(verif.id)
-    store.preferences.verification = verification
-    console.log('2. ' + store.preferences.verification)
-    console.log('3. ' + verification)
-    await initAgent([store, dispatch], container, navigation, t)
-    console.log('init agent')
+	if (agent) {
+		setVerification(verif.id)
+		store.preferences.verification = verification
+		unregisterAllOutboundTransports(agent)
+		registerOutboundTransport(agent, verif.id)
+		console.log("hello")
+	} else {
+		console.log("error agent is not initialized")
+	}
   }
 
   // const updateStoredVerification = async () => {
