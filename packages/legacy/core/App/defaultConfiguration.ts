@@ -14,10 +14,11 @@ import Scan from './screens/Scan'
 import Splash from './screens/Splash'
 import Terms from './screens/Terms'
 import UseBiometry from './screens/UseBiometry'
+import Verification from './screens/Verification'
 
 export const defaultConfiguration: ConfigurationContext = {
   pages: OnboardingPages,
-  splash: Splash,
+  splash: Splash, 
   terms: Terms,
   preface: Preface,
   developer: Developer,
@@ -45,6 +46,7 @@ export const defaultConfiguration: ConfigurationContext = {
   disableOnboardingSkip: false,
   useCustomNotifications: useNotifications,
   useBiometry: UseBiometry,
+  verification: Verification,
   whereToUseWalletUrl: 'https://example.com',
   showScanHelp: true,
   showScanButton: true,
