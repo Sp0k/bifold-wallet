@@ -16,6 +16,7 @@ const configurationContext: ConfigurationContext = {
   credentialListOptions: () => null,
   credentialEmptyList: () => null,
   useBiometry: () => null,
+  verification: () => null,
   record: Record,
   settings: [],
   developer: () => null,

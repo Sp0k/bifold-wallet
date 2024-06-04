@@ -59,6 +59,7 @@ export interface ConfigurationContext {
   showPreface?: boolean
   disableOnboardingSkip?: boolean
   useBiometry: React.FC
+  verification: React.FC
   enablePushNotifications?: PushNotificationConfiguration
   useCustomNotifications: () => { total: number; notifications: any }
   useAttestation?: () => { start: () => void; stop: () => void; loading: boolean }
