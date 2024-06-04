@@ -28,7 +28,7 @@ const Verification = () => {
     }
   }, [])
 
-  const { i18n } = useTranslation()
+  const { t } = useTranslation()
   const { ColorPallet, TextTheme, SettingsTheme } = useTheme()
   const { supportedVerifications } = useConfiguration()
   const [store, dispatch] = useStore()
@@ -38,7 +38,7 @@ const Verification = () => {
 
   const verifications: Verification[] = supportedVerifications.map((v) => ({
     id: v,
-    value: i18n.t(`Verification.${v}`),
+    value: t(`Verification.${v}`),
   }))
 
   const styles = StyleSheet.create({
@@ -75,7 +75,7 @@ const Verification = () => {
     store.preferences.verification = verification
     console.log('2. ' + store.preferences.verification)
     console.log('3. ' + verification)
-    await initAgent([store, dispatch], container, navigation)
+    await initAgent([store, dispatch], container, navigation, t)
     console.log('init agent')
   }
 
