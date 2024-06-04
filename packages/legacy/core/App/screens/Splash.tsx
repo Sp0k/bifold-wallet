@@ -6,7 +6,8 @@ import { agentDependencies } from '@credo-ts/react-native'
 import { RemoteOCABundleResolver } from '@hyperledger/aries-oca/build/legacy'
 import { useNavigation } from '@react-navigation/core'
 import { CommonActions } from '@react-navigation/native'
-import React, { useEffect, useState } from 'react'
+import React, { createContext, Dispatch, useContext, useReducer, useEffect, useState } from 'react'
+import _defaultReducer, { ReducerAction } from './reducers/store'
 import { useTranslation } from 'react-i18next'
 import { DeviceEventEmitter, StyleSheet } from 'react-native'
 import { Config } from 'react-native-config'
@@ -113,6 +114,7 @@ export const registerOutboundTransport = async (agent: Agent, verification: Veri
 const Splash: React.FC = () => {
   const { showPreface, enablePushNotifications } = useConfiguration()
   const { setAgent } = useAgent()
+  const [shutdownAgentState] = useState<ShutdownAgent>(undefined);
   const { t } = useTranslation()
   const [store, dispatch] = useStore()
   // const [outboundTransports, _] = useOutboundTransports()
