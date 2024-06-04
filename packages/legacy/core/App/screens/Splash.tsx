@@ -6,7 +6,7 @@ import { agentDependencies } from '@credo-ts/react-native'
 import { useNavigation, NavigationProp } from '@react-navigation/core'
 import { CommonActions } from '@react-navigation/native'
 import React, { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, TFunction } from 'react-i18next'
 import { DeviceEventEmitter, StyleSheet } from 'react-native'
 import { Config } from 'react-native-config'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -84,9 +84,7 @@ const resumeOnboardingAt = (
   return Screens.Preface
 }
 
-export const initAgent = async ([store, dispatch]: [State, React.Dispatch<ReducerAction<any>>], container: Container, navigation: NavigationProp<ReactNavigation.RootParamList>): Promise<void> => {
-  const { t } = useTranslation()
-
+export const initAgent = async ([store, dispatch]: [State, React.Dispatch<ReducerAction<any>>], container: Container, navigation: NavigationProp<ReactNavigation.RootParamList>, t: TFunction<"translation", undefined>): Promise<void> => {
   try {
 	const { getWalletCredentials } = useAuth()
 	const logger = container.resolve(TOKENS.UTIL_LOGGER)
@@ -285,7 +283,7 @@ const Splash: React.FC = () => {
       return
     }
 
-    initAgent([store, dispatch], container, navigation)
+    initAgent([store, dispatch], container, navigation, t)
   }, [
     mounted,
     store.authentication.didAuthenticate,
