@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useCallBack } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, StyleSheet, Text, View } from 'react-native'
 import BouncyCheckbox from 'react-native-bouncy-checkbox'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Icon from 'react-native-vector-icons/MaterialIcons'
+import { useContainer } from '../container-api'
+import { useNavigation } from '@react-navigation/core'
 
 import { useConfiguration } from '../contexts/configuration'
 import { useTheme } from '../contexts/theme'
@@ -17,7 +19,7 @@ interface Verification {
   value: string
 }
 
-const Verification = ({ navigation }) => {
+const Verification = () => {
   useEffect(() => {
     console.log(store.preferences.verification)
 
@@ -30,6 +32,8 @@ const Verification = ({ navigation }) => {
   const { ColorPallet, TextTheme, SettingsTheme } = useTheme()
   const { supportedVerifications } = useConfiguration()
   const [store, dispatch] = useStore()
+  const container = useContainer();
+  const navigation = useNavigation();
   const [verification, setVerification] = useState(store.preferences.verification)
 
   const verifications: Verification[] = supportedVerifications.map((v) => ({
@@ -71,7 +75,7 @@ const Verification = ({ navigation }) => {
     store.preferences.verification = verification
     console.log('2. ' + store.preferences.verification)
     console.log('3. ' + verification)
-    await initAgent()
+    await initAgent([store, dispatch], container, navigation)
     console.log('init agent')
   }
 
