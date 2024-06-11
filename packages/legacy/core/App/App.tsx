@@ -19,7 +19,7 @@ import { AuthProvider } from './contexts/auth'
 import { ConfigurationProvider } from './contexts/configuration'
 import { NetworkProvider } from './contexts/network'
 import { StoreProvider } from './contexts/store'
-import { ShutdownAgentProvider } from './contexts/shutdown_agent'
+import { UnusedAgentProvider } from './contexts/unused_agent'
 import { ThemeProvider } from './contexts/theme'
 import { TourProvider } from './contexts/tour/tour-provider'
 import { defaultConfiguration } from './defaultConfiguration'
@@ -47,39 +47,39 @@ function App(sytem: Container) {
     return (
       <ContainerProvider value={sytem}>
         <StoreProvider>
-		  <ShutdownAgentProvider shutdownAgent={undefined}>
-			  <AgentProvider agent={undefined}>
-				<ThemeProvider value={theme}>
-				  <AnimatedComponentsProvider value={animatedComponents}>
-					<ConfigurationProvider value={defaultConfiguration}>
-					  <AuthProvider>
-						<NetworkProvider>
-						  <StatusBar
-							hidden={false}
-							barStyle="light-content"
-							backgroundColor={theme.ColorPallet.brand.primary}
-							translucent={false}
-						  />
-						  <NetInfo />
-						  <ErrorModal />
-						  <TourProvider
-							homeTourSteps={homeTourSteps}
-							credentialsTourSteps={credentialsTourSteps}
-							credentialOfferTourSteps={credentialOfferTourSteps}
-							proofRequestTourSteps={proofRequestTourSteps}
-							overlayColor={'gray'}
-							overlayOpacity={0.7}
-						  >
-							<RootStack />
-						  </TourProvider>
-						  <Toast topOffset={15} config={toastConfig} />
-						</NetworkProvider>
-					  </AuthProvider>
-					</ConfigurationProvider>
-				  </AnimatedComponentsProvider>
-				</ThemeProvider>
-			  </AgentProvider>
-		  </ShutdownAgentProvider>
+          <UnusedAgentProvider unusedAgent={undefined}>
+            <AgentProvider agent={undefined}>
+              <ThemeProvider value={theme}>
+                <AnimatedComponentsProvider value={animatedComponents}>
+                  <ConfigurationProvider value={defaultConfiguration}>
+                    <AuthProvider>
+                      <NetworkProvider>
+                        <StatusBar
+                          hidden={false}
+                          barStyle="light-content"
+                          backgroundColor={theme.ColorPallet.brand.primary}
+                          translucent={false}
+                        />
+                        <NetInfo />
+                        <ErrorModal />
+                        <TourProvider
+                          homeTourSteps={homeTourSteps}
+                          credentialsTourSteps={credentialsTourSteps}
+                          credentialOfferTourSteps={credentialOfferTourSteps}
+                          proofRequestTourSteps={proofRequestTourSteps}
+                          overlayColor={'gray'}
+                          overlayOpacity={0.7}
+                        >
+                          <RootStack />
+                        </TourProvider>
+                        <Toast topOffset={15} config={toastConfig} />
+                      </NetworkProvider>
+                    </AuthProvider>
+                  </ConfigurationProvider>
+                </AnimatedComponentsProvider>
+              </ThemeProvider>
+            </AgentProvider>
+          </UnusedAgentProvider>
         </StoreProvider>
       </ContainerProvider>
     )

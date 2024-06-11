@@ -14,7 +14,7 @@ import { VerificationID, storeVerification, currentVerification } from '../verif
 import { testIdWithKey } from '../utils/testable'
 import { useStore } from '../contexts/store'
 import { unregisterAllOutboundTransports, registerOutboundTransport } from './Splash'
-import { ShutdownAgent, useShutdownAgent } from '../contexts/shutdown_agent'
+import { UnusedAgent, useUnusedAgent } from '../contexts/unused_agent'
 import { Agent } from '@credo-ts/core'
 
 interface Verification {
@@ -36,7 +36,7 @@ const Verification = () => {
   const { supportedVerifications } = useConfiguration()
   const [store] = useStore()
   const { agent, setAgent } = useAgent()
-  const { setShutdownAgent, shutdownAgent } = useShutdownAgent()
+  const { setUnusedAgent, unusedAgent } = useUnusedAgent()
   const [storeVerification, setStoreVerification] = useState(store.preferences.verification)
 
   const verifications: Verification[] = supportedVerifications.map((v) => ({
@@ -72,20 +72,17 @@ const Verification = () => {
    */
   const handleVerificationChange = async (v: Verification) => {
     if (agent) {
-      if (v.id !== storeVerification && shutdownAgent) {
-        agent.shutdown()
-        shutdownAgent.initialize()
+      if (v.id !== storeVerification && unusedAgent) {
+        const tmp = agent
 
-		const tmp = agent
-
-        setShutdownAgent((prev: ShutdownAgent) => {
+        setUnusedAgent((prev: UnusedAgent) => {
           if (prev) {
             setAgent(prev)
 
             return tmp
           } else {
             // TODO: Emit an error
-            console.log('error shutdown agent is not initialized')
+            console.log('error unused agent is not initialized')
           }
 
           return undefined

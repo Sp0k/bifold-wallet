@@ -6,7 +6,7 @@ import { agentDependencies } from '@credo-ts/react-native'
 import { useNavigation } from '@react-navigation/core'
 import { CommonActions } from '@react-navigation/native'
 import React, { createContext, Dispatch, useContext, useReducer, useEffect, useState, Children } from 'react'
-import _defaultReducer, { ReducerAction } from './reducers/store'
+import _defaultReducer, { ReducerAction } from '../contexts/reducers/store'
 import { useTranslation } from 'react-i18next'
 import { DeviceEventEmitter, StyleSheet } from 'react-native'
 import { Config } from 'react-native-config'
@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { EventTypes } from '../constants'
 import { TOKENS, useContainer } from '../container-api'
 import { useAnimatedComponents } from '../contexts/animated-components'
-import { useShutdownAgent } from '../contexts/shutdown_agent'
+import { useUnusedAgent } from '../contexts/unused_agent'
 import { useAuth } from '../contexts/auth'
 import { useConfiguration } from '../contexts/configuration'
 import { DispatchAction } from '../contexts/reducers/store'
@@ -113,7 +113,7 @@ export const registerOutboundTransport = async (agent: Agent, verification: Veri
 const Splash: React.FC = () => {
   const { showPreface, enablePushNotifications } = useConfiguration()
   const { setAgent } = useAgent()
-  const { setShutdownAgent } = useShutdownAgent()
+  const { setUnusedAgent } = useUnusedAgent()
   const { t } = useTranslation()
   const [store, dispatch] = useStore()
   // const [outboundTransports, _] = useOutboundTransports()
@@ -269,15 +269,16 @@ const Splash: React.FC = () => {
     const initBleAgent = (credentials: WalletSecret): Agent | undefined => {
       try {
         const agent = new Agent({
-          // config: undefined,
-          walletConfig: {
-            id: credentials.id,
-            key: credentials.key ?? '',
+          config: {
+            label: 'd',
+            walletConfig: {
+              id: credentials.id,
+              key: credentials.key ?? '',
+            },
           },
           dependencies: agentDependencies,
           // modules: {}
         })
-
         registerOutboundTransport(agent, VerificationID.Bluetooth)
 
         return agent
@@ -299,12 +300,12 @@ const Splash: React.FC = () => {
           store.preferences.verification === VerificationID.QRCode
             ? initQRCodeAgent(credentials)
             : initBleAgent(credentials)
-        const shutdownAgent =
+        const unusedAgent =
           store.preferences.verification !== VerificationID.QRCode
             ? initBleAgent(credentials)
             : initQRCodeAgent(credentials)
 
-        if (!newAgent || !shutdownAgent) {
+        if (!newAgent || !unusedAgent) {
           const error = new BifoldError(
             t('Error.Title1045'),
             t('Error.Message1045'),
@@ -330,11 +331,12 @@ const Splash: React.FC = () => {
         }
 
         await newAgent.initialize()
+        await unusedAgent.initialize()
 
         await createLinkSecretIfRequired(newAgent)
 
         setAgent(newAgent)
-        setShutdownAgent(shutdownAgent)
+        setUnusedAgent(unusedAgent)
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
