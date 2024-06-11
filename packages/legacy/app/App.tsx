@@ -30,6 +30,7 @@ import { isTablet } from 'react-native-device-info'
 import Orientation from 'react-native-orientation-locker'
 import SplashScreen from 'react-native-splash-screen'
 import Toast from 'react-native-toast-message'
+import { Text } from 'react-native'
 
 initLanguages(translationResources)
 
@@ -49,41 +50,18 @@ const App = () => {
   }
 
   return (
-    <StoreProvider>
-      <AgentProvider agent={undefined}>
-        <ThemeProvider value={theme}>
-          <AnimatedComponentsProvider value={animatedComponents}>
-            <ConfigurationProvider value={defaultConfiguration}>
-              <CommonUtilProvider>
-                <AuthProvider>
-                  <NetworkProvider>
-                    <StatusBar
-                      hidden={false}
-                      barStyle="light-content"
-                      backgroundColor={theme.ColorPallet.brand.primary}
-                      translucent={false}
-                    />
-                    <NetInfo />
-                    <ErrorModal />
-                    <TourProvider
-                      homeTourSteps={homeTourSteps}
-                      credentialsTourSteps={credentialsTourSteps}
-                      credentialOfferTourSteps={credentialOfferTourSteps}
-                      proofRequestTourSteps={proofRequestTourSteps}
-                      overlayColor={'gray'}
-                      overlayOpacity={0.7}
-                    >
-                      <RootStack />
-                    </TourProvider>
-                    <Toast topOffset={15} config={toastConfig} />
-                  </NetworkProvider>
-                </AuthProvider>
-              </CommonUtilProvider>
-            </ConfigurationProvider>
-          </AnimatedComponentsProvider>
-        </ThemeProvider>
-      </AgentProvider>
-    </StoreProvider>
+    <AgentProvider agent={undefined}>
+      <ConfigurationProvider value={defaultConfiguration}>
+        <CommonUtilProvider>
+          <AuthProvider>
+            <NetworkProvider>
+              <Text>Hello, World!</Text>
+              <Toast topOffset={15} config={toastConfig} />
+            </NetworkProvider>
+          </AuthProvider>
+        </CommonUtilProvider>
+      </ConfigurationProvider>
+    </AgentProvider>
   )
 }
 
