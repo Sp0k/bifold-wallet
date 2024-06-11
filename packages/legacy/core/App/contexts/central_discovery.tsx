@@ -7,16 +7,20 @@ import {
   DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
   DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
   useCentral,
+  useCentralOnConnected,
 } from '@animo-id/react-native-ble-didcomm'
 
 const CentralDiscovery = () => {
   const { central } = useCentral()
   const [centralState, setCentralState] = useState<Central>(central)
+  const [connectState, setConnectState] = useState<boolean>(false)
 
   const startCentral = async () => {
     const c = new Central()
 
     await c.start()
+
+    setConnectState(true)
 
     const uuid = '56847593-40ea-4a92-bd8c-e1514dca1c61'
     await c.setService({
@@ -44,7 +48,7 @@ const CentralDiscovery = () => {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Button title="Start Central" onPress={startCentral} />
-      <Text>central is {central ? 'started' : 'undefined'}</Text>
+      <Text>central is {connectState ? 'started' : 'undefined'}</Text>
       <Button title="Scan" onPress={scan} />
       {idList.length === 0 ? <Text>No peripherals found</Text> : idList.map((id) => <Text>{id}</Text>)}
     </View>
