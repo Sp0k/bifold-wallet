@@ -14,6 +14,8 @@ import { VerificationID, storeVerification, currentVerification } from '../verif
 import { testIdWithKey } from '../utils/testable'
 import { useStore } from '../contexts/store'
 import { unregisterAllOutboundTransports, registerOutboundTransport } from './Splash'
+import { ShutdownAgent, useShutdownAgent } from '../contexts/shutdown_agent'
+import { Agent } from '@credo-ts/core'
 
 interface Verification {
   id: VerificationID
@@ -32,11 +34,10 @@ const Verification = () => {
   const { t } = useTranslation()
   const { ColorPallet, TextTheme, SettingsTheme } = useTheme()
   const { supportedVerifications } = useConfiguration()
-  const [store, dispatch] = useStore()
-  const { agent } = useAgent();
-  const container = useContainer();
-  const navigation = useNavigation();
-  const [verification, setVerification] = useState(store.preferences.verification)
+  const [store] = useStore()
+  const { agent, setAgent } = useAgent()
+  const { setShutdownAgent, shutdownAgent } = useShutdownAgent()
+  const [storeVerification, setStoreVerification] = useState(store.preferences.verification)
 
   const verifications: Verification[] = supportedVerifications.map((v) => ({
     id: v,
@@ -66,21 +67,37 @@ const Verification = () => {
   })
 
   /**
-   * Once user select the particular verification from the list,
-   * store user preference into the AsyncStorage
-   *
-   * @param {BlockSelection} verification
+   * Toggle the agent based on the selected verification method.
+   * @param {Verification} v
    */
-  const handleVerificationChange = async (verif: Verification) => {
-	if (agent) {
-		setVerification(verif.id)
-		store.preferences.verification = verification
-		unregisterAllOutboundTransports(agent)
-		await registerOutboundTransport(agent, verif.id)
-		console.log("hello")
-	} else {
-		console.log("error agent is not initialized")
-	}
+  const handleVerificationChange = async (v: Verification) => {
+    if (agent) {
+      if (v.id !== storeVerification && shutdownAgent) {
+        agent.shutdown()
+        shutdownAgent.initialize()
+
+		const tmp = agent
+
+        setShutdownAgent((prev: ShutdownAgent) => {
+          if (prev) {
+            setAgent(prev)
+
+            return tmp
+          } else {
+            // TODO: Emit an error
+            console.log('error shutdown agent is not initialized')
+          }
+
+          return undefined
+        })
+
+        setStoreVerification(v.id)
+      }
+
+      console.log('hello')
+    } else {
+      console.log('error agent is not initialized')
+    }
   }
 
   // const updateStoredVerification = async () => {

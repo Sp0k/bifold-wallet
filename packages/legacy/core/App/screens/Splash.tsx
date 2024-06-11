@@ -6,11 +6,12 @@ import { agentDependencies } from '@credo-ts/react-native'
 import { RemoteOCABundleResolver } from '@hyperledger/aries-oca/build/legacy'
 import { useNavigation } from '@react-navigation/core'
 import { CommonActions } from '@react-navigation/native'
-import React, { createContext, Dispatch, useContext, useReducer, useEffect, useState } from 'react'
+import React, { createContext, Dispatch, useContext, useReducer, useEffect, useState, Children } from 'react'
 import _defaultReducer, { ReducerAction } from './reducers/store'
 import { useTranslation } from 'react-i18next'
 import { DeviceEventEmitter, StyleSheet } from 'react-native'
 import { Config } from 'react-native-config'
+import { WalletSecret } from '../types/security'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { State } from '../types/state'
 import _defaultReducer, { ReducerAction } from '../contexts/reducers/store'
@@ -18,6 +19,7 @@ import _defaultReducer, { ReducerAction } from '../contexts/reducers/store'
 import { EventTypes } from '../constants'
 import { TOKENS, useContainer } from '../container-api'
 import { useAnimatedComponents } from '../contexts/animated-components'
+import { useShutdownAgent } from '../contexts/shutdown_agent'
 import { useAuth } from '../contexts/auth'
 import { useConfiguration } from '../contexts/configuration'
 import { DispatchAction } from '../contexts/reducers/store'
@@ -87,23 +89,23 @@ const resumeOnboardingAt = (
 }
 
 export const unregisterAllOutboundTransports = (agent: Agent) => {
-	agent.outboundTransports.forEach(ot => agent.unregisterOutboundTransport(ot))
+  agent.outboundTransports.forEach((ot) => agent.unregisterOutboundTransport(ot))
 }
 
 export const registerOutboundTransport = async (agent: Agent, verification: VerificationID) => {
-	if (verification === VerificationID.Bluetooth) {
-		const peripheral = new Peripheral()
-		await peripheral.start()
-		const bleOutboundTransport = new BleOutboundTransport(peripheral)
+  if (verification === VerificationID.Bluetooth) {
+    const peripheral = new Peripheral()
+    await peripheral.start()
+    const bleOutboundTransport = new BleOutboundTransport(peripheral)
 
-		agent.registerOutboundTransport(bleOutboundTransport)
-	} else {
-		const wsTransport = new WsOutboundTransport()
-		const httpTransport = new HttpOutboundTransport()
+    agent.registerOutboundTransport(bleOutboundTransport)
+  } else {
+    const wsTransport = new WsOutboundTransport()
+    const httpTransport = new HttpOutboundTransport()
 
-		agent.registerOutboundTransport(wsTransport)
-		agent.registerOutboundTransport(httpTransport)
-	}
+    agent.registerOutboundTransport(wsTransport)
+    agent.registerOutboundTransport(httpTransport)
+  }
 }
 
 /**
@@ -114,7 +116,7 @@ export const registerOutboundTransport = async (agent: Agent, verification: Veri
 const Splash: React.FC = () => {
   const { showPreface, enablePushNotifications } = useConfiguration()
   const { setAgent } = useAgent()
-  const [shutdownAgentState] = useState<ShutdownAgent>(undefined);
+  const { setShutdownAgent } = useShutdownAgent()
   const { t } = useTranslation()
   const [store, dispatch] = useStore()
   // const [outboundTransports, _] = useOutboundTransports()
@@ -236,21 +238,19 @@ const Splash: React.FC = () => {
       return
     }
 
-    const initAgent = async (): Promise<void> => {
+    const initAgentEmitError = (err: unknown) => {
+      const error = new BifoldError(t('Error.Title1045'), t('Error.Message1045'), (err as Error)?.message ?? err, 1045)
+      DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
+    }
+
+    const initQRCodeAgent = (credentials: WalletSecret): Agent | undefined => {
       try {
-        const credentials = await getWalletCredentials()
-
-        if (!credentials?.id || !credentials.key) {
-          // Cannot find wallet id/secret
-          return
-        }
-
-        const newAgent = new Agent({
+        const agent = new Agent({
           config: {
             label: store.preferences.walletName || 'Aries Bifold',
             walletConfig: {
               id: credentials.id,
-              key: credentials.key,
+              key: credentials.key ?? '',
             },
             logger,
             autoUpdateStorageOnStartup: true,
@@ -262,7 +262,63 @@ const Splash: React.FC = () => {
           }),
         })
 
-		registerOutboundTransport(newAgent, store.preferences.verification)
+        registerOutboundTransport(agent, VerificationID.QRCode)
+
+        return agent
+      } catch (err: unknown) {
+        initAgentEmitError(err)
+      }
+    }
+
+    const initBleAgent = (credentials: WalletSecret): Agent | undefined => {
+      try {
+        const agent = new Agent({
+          // config: undefined,
+          walletConfig: {
+            id: credentials.id,
+            key: credentials.key ?? '',
+          },
+          dependencies: agentDependencies,
+          // modules: {}
+        })
+
+        registerOutboundTransport(agent, VerificationID.Bluetooth)
+
+        return agent
+      } catch (err: unknown) {
+        initAgentEmitError(err)
+      }
+    }
+
+    const initAgent = async (): Promise<void> => {
+      try {
+        const credentials = await getWalletCredentials()
+
+        if (!credentials?.id || !credentials.key) {
+          // Cannot find wallet id/secret
+          return
+        }
+
+        const newAgent =
+          store.preferences.verification === VerificationID.QRCode
+            ? initQRCodeAgent(credentials)
+            : initBleAgent(credentials)
+        const shutdownAgent =
+          store.preferences.verification !== VerificationID.QRCode
+            ? initBleAgent(credentials)
+            : initQRCodeAgent(credentials)
+
+        if (!newAgent || !shutdownAgent) {
+          const error = new BifoldError(
+            t('Error.Title1045'),
+            t('Error.Message1045'),
+            'Failed to initialize agent',
+            1045
+          )
+          DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
+
+          return
+        }
 
         // If we haven't migrated to Aries Askar yet, we need to do this before we initialize the agent.
         if (!didMigrateToAskar(store.migration)) {
@@ -282,6 +338,7 @@ const Splash: React.FC = () => {
         await createLinkSecretIfRequired(newAgent)
 
         setAgent(newAgent)
+        setShutdownAgent(shutdownAgent)
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
