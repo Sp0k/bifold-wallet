@@ -1,7 +1,7 @@
 import AgentProvider from '@credo-ts/react-hooks'
 import * as React from 'react'
 import { useEffect, useMemo, useState } from 'react'
-import { Text, Button } from 'react-native'
+import { Text, Button, PermissionsAndroid } from 'react-native'
 import SplashScreen from 'react-native-splash-screen'
 import Toast from 'react-native-toast-message'
 
@@ -54,6 +54,16 @@ function App(sytem: Container) {
       // RN version can be displayed.
       SplashScreen.hide()
     }, [])
+
+	useEffect(() => {
+	  PermissionsAndroid.requestMultiple([
+		  'android.permission.ACCESS_FINE_LOCATION',
+		  'android.permission.BLUETOOTH_CONNECT',
+		  'android.permission.BLUETOOTH_SCAN',
+		  'android.permission.BLUETOOTH_ADVERTISE',
+		  'android.permission.ACCESS_COARSE_LOCATION'
+	  ])
+	}, [])
 
     return (
       <CentralProvider central={new Central()}>
