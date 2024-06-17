@@ -39,6 +39,8 @@ import {
 //import { credentialOfferTourSteps, credentialsTourSteps, proofRequestTourSteps } from './index'
 import { BleOutboundTransport, BleInboundTransport } from '@credo-ts/transport-ble'
 import CentralDiscovery from './contexts/central_discovery'
+import ChoiceScreen from './contexts/choice-screen'
+import PeripheralScreen from './contexts/peripheral-screen'
 
 initLanguages(translationResources)
 
@@ -55,15 +57,15 @@ function App(sytem: Container) {
       SplashScreen.hide()
     }, [])
 
-	useEffect(() => {
-	  PermissionsAndroid.requestMultiple([
-		  'android.permission.ACCESS_FINE_LOCATION',
-		  'android.permission.BLUETOOTH_CONNECT',
-		  'android.permission.BLUETOOTH_SCAN',
-		  'android.permission.BLUETOOTH_ADVERTISE',
-		  'android.permission.ACCESS_COARSE_LOCATION'
-	  ])
-	}, [])
+    useEffect(() => {
+      PermissionsAndroid.requestMultiple([
+        'android.permission.ACCESS_FINE_LOCATION',
+        'android.permission.BLUETOOTH_CONNECT',
+        'android.permission.BLUETOOTH_SCAN',
+        'android.permission.BLUETOOTH_ADVERTISE',
+        'android.permission.ACCESS_COARSE_LOCATION',
+      ])
+    }, [])
 
     return (
       <CentralProvider central={new Central()}>
@@ -81,7 +83,7 @@ function App(sytem: Container) {
                       overlayColor={'gray'}
                       overlayOpacity={0.7}
                     >
-                      <CentralDiscovery />
+                      <PeripheralScreen />
                     </TourProvider>
                   </NetworkProvider>
                 </AuthProvider>
