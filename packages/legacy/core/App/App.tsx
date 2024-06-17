@@ -35,6 +35,8 @@ import {
   DEFAULT_DIDCOMM_SERVICE_UUID,
   DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
   DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
+  PeripheralProvider,
+  Peripheral,
 } from '@animo-id/react-native-ble-didcomm'
 //import { credentialOfferTourSteps, credentialsTourSteps, proofRequestTourSteps } from './index'
 import { BleOutboundTransport, BleInboundTransport } from '@credo-ts/transport-ble'
@@ -68,30 +70,32 @@ function App(sytem: Container) {
     }, [])
 
     return (
-      <CentralProvider central={new Central()}>
-        <AgentProvider agent={undefined}>
-          <ThemeProvider value={theme}>
-            <AnimatedComponentsProvider value={animatedComponents}>
-              <ConfigurationProvider value={defaultConfiguration}>
-                <AuthProvider>
-                  <NetworkProvider>
-                    <TourProvider
-                      homeTourSteps={homeTourSteps}
-                      credentialsTourSteps={credentialsTourSteps}
-                      credentialOfferTourSteps={credentialOfferTourSteps}
-                      proofRequestTourSteps={proofRequestTourSteps}
-                      overlayColor={'gray'}
-                      overlayOpacity={0.7}
-                    >
-                      <PeripheralScreen />
-                    </TourProvider>
-                  </NetworkProvider>
-                </AuthProvider>
-              </ConfigurationProvider>
-            </AnimatedComponentsProvider>
-          </ThemeProvider>
-        </AgentProvider>
-      </CentralProvider>
+      <PeripheralProvider peripheral={new Peripheral()}>
+        <CentralProvider central={new Central()}>
+          <AgentProvider agent={undefined}>
+            <ThemeProvider value={theme}>
+              <AnimatedComponentsProvider value={animatedComponents}>
+                <ConfigurationProvider value={defaultConfiguration}>
+                  <AuthProvider>
+                    <NetworkProvider>
+                      <TourProvider
+                        homeTourSteps={homeTourSteps}
+                        credentialsTourSteps={credentialsTourSteps}
+                        credentialOfferTourSteps={credentialOfferTourSteps}
+                        proofRequestTourSteps={proofRequestTourSteps}
+                        overlayColor={'gray'}
+                        overlayOpacity={0.7}
+                      >
+                        <PeripheralScreen />
+                      </TourProvider>
+                    </NetworkProvider>
+                  </AuthProvider>
+                </ConfigurationProvider>
+              </AnimatedComponentsProvider>
+            </ThemeProvider>
+          </AgentProvider>
+        </CentralProvider>
+      </PeripheralProvider>
     )
   }
 }
