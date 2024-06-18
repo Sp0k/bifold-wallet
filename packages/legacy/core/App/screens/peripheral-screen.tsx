@@ -5,6 +5,7 @@ import {
   usePeripheral,
   usePeripheralOnReceivedMessage,
   Peripheral,
+  usePeripheralShutdownOnUnmount,
 } from '@animo-id/react-native-ble-didcomm'
 import { useEffect, useState } from 'react'
 import { parseRequestMessage, RequestMessage, sendRequestMessage } from '../request_message'
@@ -76,7 +77,10 @@ const PeripheralScreen = () => {
     }
   }
 
-  const onAdvertise = async () => await peripheral.advertise()
+  const onAdvertise = async () => {
+    await peripheral.advertise()
+    console.log('Peripheral advertised')
+  }
 
   const onClose = () => setShowCentrals(false)
 
@@ -120,7 +124,11 @@ const PeripheralScreen = () => {
     console.log('Peripheral started')
     // console.log('Peripheral advertised')
     // peripheral.advertise()
-  })
+
+    return () => {
+      setShowCentrals(false)
+    }
+  }, [])
 
   usePeripheralOnReceivedMessage((message) => {
     const centralRequest = parseCentralMessage(message)
@@ -130,6 +138,8 @@ const PeripheralScreen = () => {
 
     console.log('Received message: ', centralRequest)
   })
+
+  usePeripheralShutdownOnUnmount()
 
   return (
     <View style={styles.background}>

@@ -11,6 +11,7 @@ import {
   useCentralOnDisconnected,
   useCentralOnDiscovered,
   useCentralOnReceivedMessage,
+  useCentralShutdownOnUnmount,
 } from '@animo-id/react-native-ble-didcomm'
 import { RequestMessage, parseRequestMessage, sendRequestMessage } from '../request_message'
 import { parsePeripheralMessage, PeripheralRequest, PeripheralRequestStatus } from './peripheral-screen'
@@ -90,7 +91,7 @@ const CentralScreen = () => {
   const sendRequest = async (request: CentralRequest) =>
     await sendRequestMessage<Central, CentralRequestStatus, CentralRequest>(central, request)
 
-  const connect = (pid: string) => {
+  const connect = async (pid: string) => {
     if (peripheralId) {
       throw new Error('An other peripheral is already connected')
     } else {
@@ -98,8 +99,8 @@ const CentralScreen = () => {
 
       setPeripheralId(pid)
       // TODO: Maybe create a custom hook...
+      await central.connect(pid)
       setIsConnected(true)
-      central.connect(peripheralId as string)
     }
   }
 
@@ -114,13 +115,13 @@ const CentralScreen = () => {
     }
   }
 
-  const requestConnectionRequest = (peripheralId: string) => {
+  const sendRequestConnectionRequest = async (peripheralId: string) => {
     const request: CentralRequest = {
       status: CentralRequestStatus.CONNECTION,
       peripheral_identifier: peripheralId,
     }
 
-    sendRequest(request)
+    await sendRequest(request)
   }
 
   const acceptConnection = (request: PeripheralRequest) => {
@@ -173,35 +174,52 @@ const CentralScreen = () => {
     </View>
   )
 
-  useCentralOnDiscovered((identifier: string) => {
-    console.log('Peripheral discovered: ', identifier)
+  useEffect(() => {
+    const onDiscoverPeripheralListener = central.registerOnDiscoveredListener(
+      ({ identifier }: { identifier: string }) => {
+        console.log('Peripheral discovered: ', identifier)
 
-    // First connection, to be able to send a messasge to the peripheral
-    connect(identifier)
-    requestConnectionRequest(identifier)
-  })
+        connect(identifier)
+          .then(() => {
+            sendRequestConnectionRequest(identifier)
+              .then(() => {})
+              .catch((err) => {
+                console.error('Request failed: ', err)
+              })
+          })
+          .catch((err) => {
+            console.error('Connection failed: ', err)
+          })
+      }
+    )
 
-  useCentralOnReceivedMessage((message) => {
-    const request = parsePeripheralMessage(message)
+    const onReceivedMessageListener = central.registerMessageListener(({ message }: { message: string }) => {
+      const request = parsePeripheralMessage(message)
 
-    handleReceivedMessage(request)
-  })
+      handleReceivedMessage(request)
+    })
 
-  useCentralOnConnected((identifier) => {
-    if (identifier == peripheralId) {
+    const onConnectedCentralListener = central.registerOnConnectedListener(({ identifier }: { identifier: string }) => {
       console.log('Peripheral connected: ', identifier)
-    } else {
-      throw new Error('Unexpected error: peripheral connected is not the requested one')
-    }
-  })
+    })
 
-  useCentralOnDisconnected((identifier) => {
-    if (identifier == peripheralId) {
-      disconnect()
-    } else {
-      throw new Error('Unexpected error: peripheral disconnected is not the connected one')
+    const onDisconnectedCentralListener = central.registerOnDisconnectedListener(
+      ({ identifier }: { identifier: string }) => {
+        disconnect()
+        console.log('Peripheral disconnected: ', identifier)
+      }
+    )
+
+    return () => {
+      onDiscoverPeripheralListener.remove()
+      onReceivedMessageListener.remove()
+      onConnectedCentralListener.remove()
+      onDisconnectedCentralListener.remove()
+
+      setIsConnected(false)
+      setPeripheralId(undefined)
     }
-  })
+  }, [peripheralId, isConnected])
 
   useEffect(() => {
     central.start()
@@ -216,6 +234,8 @@ const CentralScreen = () => {
 
     central.scan()
   }, [])
+
+  useCentralShutdownOnUnmount()
 
   return (
     <SafeAreaView style={styles.background}>
