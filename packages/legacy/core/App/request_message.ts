@@ -1,3 +1,11 @@
+// Syntax of central/peripheral message:
+//
+// <command_type> <peripheral_identifier>
+//
+// e.g.
+//
+// connection XXX:XXX:XXX
+
 export interface RequestMessage<S> {
   status: S
   peripheral_identifier: string

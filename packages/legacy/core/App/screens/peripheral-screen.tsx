@@ -11,13 +11,6 @@ import { parseRequestMessage, RequestMessage, sendRequestMessage } from '../requ
 import { TouchableOpacity, Text, View, StyleSheet, FlatList, Button } from 'react-native'
 import { CentralRequest, CentralRequestStatus, parseCentralMessage } from './central-screen'
 
-// Syntax of peripheral message:
-//
-// <command_type> <peripheral_identifier>
-//
-// e.g.
-//
-// connection_accepted XXX:XXX:XXX
 export enum PeripheralRequestStatus {
   CONNECTION_ACCEPTED = 'connection_accepted', // Accept connection request from central
   CONNECTION_REJECTED = 'connection_rejected', // Reject connection request from central
@@ -127,6 +120,8 @@ const PeripheralScreen = () => {
     })
 
     console.log('Peripheral started')
+    // console.log('Peripheral advertised')
+    // peripheral.advertise()
   })
 
   usePeripheralOnReceivedMessage((message) => {
