@@ -9,6 +9,23 @@ import { useEffect, useState } from 'react'
 import { TouchableOpacity, Text, View, StyleSheet, FlatList, Button } from 'react-native'
 import { CentralRequest, CentralRequestStatus, parseCentralMessage } from './central-screen'
 
+// Peripheral message handler for the application syntax:
+//
+// <command_type> <peripheral_identifier>
+//
+// e.g.
+//
+// connection_accepted XXX:XXX:XXX
+export enum PeripheralRequestStatus {
+  CONNECTION_ACCEPTED = 'connection_accepted',
+  CONNECTION_REJECTED = 'connection_rejected',
+}
+
+export interface PeripheralRequest {
+  request: PeripheralRequestStatus
+  identifier: string
+}
+
 const styles = StyleSheet.create({
   background: {
     backgroundColor: '#151818',
@@ -55,8 +72,27 @@ const PeripheralScreen = () => {
     console.log(centralRequest)
   })
 
+  const formatRequest = (request: PeripheralRequest) => `${request.request} ${request.identifier}`
+
+  const sendRequest = (request: PeripheralRequest) => {
+    const message = formatRequest(request)
+
+    console.log(`Send: ${message}`)
+
+    peripheral.sendMessage(message)
+  }
+
+  const acceptRequest = (identifier: string, request: CentralRequestStatus) => {
+    if (request === CentralRequestStatus.CONNECTION) {
+      sendRequest({ request: PeripheralRequestStatus.CONNECTION_ACCEPTED, identifier } as PeripheralRequest)
+      console.log('Accepted connection request')
+    } else {
+      throw new Error('Invalid request')
+    }
+  }
+
   const onPress = () => console.log('Advertise')
-  const renderItem = ({ identifier }: CentralRequest) => (
+  const renderItem = ({ identifier, request }: CentralRequest) => (
     <View
       style={{ flex: 1, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: 'row', marginBottom: 20 }}
     >
@@ -71,7 +107,7 @@ const PeripheralScreen = () => {
             width: 60,
             height: 60,
           }}
-          onPress={() => console.log('Accept')}
+          onPress={() => acceptRequest(identifier, request)}
         >
           <Text>✔</Text>
         </TouchableOpacity>

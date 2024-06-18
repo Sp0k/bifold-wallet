@@ -1,6 +1,6 @@
 // Central message handler for the application syntax:
 //
-// <command_type> <central_identifier>
+// <command_type> <peripheral_identifier>
 //
 // e.g.
 //
