@@ -56,7 +56,7 @@ export enum Stacks {
   ProofRequestsStack = 'Proof Requests Stack',
   NotificationStack = 'Notifications Stack',
   ConnectionStack = 'Connection Stack',
-  ProofStack = 'Proof Stack',
+  BleCommunicationPrototypeStack = 'Proof Stack',
 }
 
 export enum TabStacks {
@@ -74,7 +74,7 @@ export type RootStackParams = {
   [Stacks.ContactStack]: NavigatorScreenParams<ContactStackParams>
   [Stacks.ProofRequestsStack]: NavigatorScreenParams<ProofRequestsStackParams>
   [Stacks.NotificationStack]: NavigatorScreenParams<NotificationStackParams>
-  [Stacks.ProofStack]: NavigatorScreenParams<BleCommunicationPrototypeParams>
+  [Stacks.BleCommunicationPrototypeStack]: NavigatorScreenParams<BleCommunicationPrototypeParams>
 }
 
 export type TabStackParams = {

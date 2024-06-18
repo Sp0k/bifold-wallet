@@ -41,6 +41,7 @@ import {
 //import { credentialOfferTourSteps, credentialsTourSteps, proofRequestTourSteps } from './index'
 import { BleOutboundTransport, BleInboundTransport } from '@credo-ts/transport-ble'
 import ChoiceScreen from './screens/choice-screen'
+import BleCommunicationPrototypeStack from './navigators/BleCommunicationPrototypeStack'
 
 initLanguages(translationResources)
 
@@ -84,7 +85,7 @@ function App(sytem: Container) {
                         overlayColor={'gray'}
                         overlayOpacity={0.7}
                       >
-                        <ChoiceScreen />
+                        <BleCommunicationPrototypeStack />
                       </TourProvider>
                     </NetworkProvider>
                   </AuthProvider>

@@ -1,9 +1,15 @@
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native'
 import { useNavigation } from '@react-navigation/core'
+import { StackNavigationProp } from '@react-navigation/stack'
 import { BleCommunicationPrototypeParams, Screens } from '../types/navigators'
-import { StackScreenProps } from '@react-navigation/stack'
 
-export const NavButton = ({ title, onPress, color }) => {
+interface NavButtonProps {
+  title: string
+  onPress: () => void
+  color: string
+}
+
+export const NavButton = ({ title, onPress, color }: NavButtonProps) => {
   return (
     <TouchableOpacity style={[styles.button, { backgroundColor: `${color}` }]} onPress={onPress}>
       <Text style={styles.btnText}>{title}</Text>
@@ -12,10 +18,12 @@ export const NavButton = ({ title, onPress, color }) => {
 }
 
 const ChoiceScreen = () => {
-  const navigation = useNavigation()
-
+  const navigation = useNavigation<StackNavigationProp<BleCommunicationPrototypeParams>>()
   const onPressCentralHandler = () => navigation.navigate(Screens.CentralScreen)
   const onPressPeripheralHandler = () => navigation.navigate(Screens.PeripheralScreen)
+
+  // const onPressCentralHandler = () => console.log('Central')
+  // const onPressPeripheralHandler = () => console.log('Peripheral')
 
   return (
     <View style={styles.background}>
