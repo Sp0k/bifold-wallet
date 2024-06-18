@@ -40,9 +40,7 @@ import {
 } from '@animo-id/react-native-ble-didcomm'
 //import { credentialOfferTourSteps, credentialsTourSteps, proofRequestTourSteps } from './index'
 import { BleOutboundTransport, BleInboundTransport } from '@credo-ts/transport-ble'
-import CentralDiscovery from './contexts/central_discovery'
-import ChoiceScreen from './contexts/choice-screen'
-import PeripheralScreen from './contexts/peripheral-screen'
+import ChoiceScreen from './screens/choice-screen'
 
 initLanguages(translationResources)
 
@@ -86,7 +84,7 @@ function App(sytem: Container) {
                         overlayColor={'gray'}
                         overlayOpacity={0.7}
                       >
-                        <PeripheralScreen />
+                        <ChoiceScreen />
                       </TourProvider>
                     </NetworkProvider>
                   </AuthProvider>

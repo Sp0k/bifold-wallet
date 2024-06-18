@@ -41,6 +41,9 @@ export enum Screens {
   NameWallet = 'Name Wallet',
   RenameContact = 'Rename Contact',
   ScanHelp = 'Scan Help',
+  ChoiceScreen = 'Menu',
+  CentralScreen = 'Central',
+  PeripheralScreen = 'Peripheral',
 }
 
 export enum Stacks {
@@ -53,6 +56,7 @@ export enum Stacks {
   ProofRequestsStack = 'Proof Requests Stack',
   NotificationStack = 'Notifications Stack',
   ConnectionStack = 'Connection Stack',
+  ProofStack = 'Proof Stack',
 }
 
 export enum TabStacks {
@@ -70,6 +74,7 @@ export type RootStackParams = {
   [Stacks.ContactStack]: NavigatorScreenParams<ContactStackParams>
   [Stacks.ProofRequestsStack]: NavigatorScreenParams<ProofRequestsStackParams>
   [Stacks.NotificationStack]: NavigatorScreenParams<NotificationStackParams>
+  [Stacks.ProofStack]: NavigatorScreenParams<BleCommunicationPrototypeParams>
 }
 
 export type TabStackParams = {
@@ -166,6 +171,12 @@ export type DeliveryStackParams = {
   [Screens.OnTheWay]: { credentialId: string }
   [Screens.Declined]: { credentialId: string }
   [Screens.Chat]: { connectionId: string }
+}
+
+export type BleCommunicationPrototypeParams = {
+  [Screens.CentralScreen]: undefined
+  [Screens.ChoiceScreen]: undefined
+  [Screens.PeripheralScreen]: undefined
 }
 
 export type ScreenOptionsType = Partial<Record<Screens, StackNavigationOptions>>
