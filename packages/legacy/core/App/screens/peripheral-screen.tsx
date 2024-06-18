@@ -45,9 +45,7 @@ const styles = StyleSheet.create({
 const PeripheralScreen = () => {
   const { peripheral } = usePeripheral()
   const [showCentrals, setShowCentrals] = useState(false)
-  const [centralRequests, setCentralRequests] = useState<CentralRequest[]>([
-    { status: CentralRequestStatus.CONNECTION, peripheral_identifier: 'XXX:XXX:XXX' },
-  ])
+  const [centralRequests, setCentralRequests] = useState<CentralRequest[]>([])
 
   const sendRequest = async (request: PeripheralRequest) =>
     await sendRequestMessage<Peripheral, PeripheralRequestStatus, PeripheralRequest>(peripheral, request)
@@ -140,7 +138,7 @@ const PeripheralScreen = () => {
           <Text style={{ color: '#CCF6C5', fontSize: 40 }}>Advertise</Text>
         </TouchableOpacity>
       </View>
-      {true && (
+      {showCentrals && (
         <View
           style={{
             backgroundColor: '#CCF6C5',

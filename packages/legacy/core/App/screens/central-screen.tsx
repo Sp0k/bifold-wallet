@@ -220,7 +220,7 @@ const CentralScreen = () => {
   return (
     <SafeAreaView style={styles.background}>
       {scanList ? (
-        <FlatList data={scanList} keyExtractor={uuid} renderItem={({ item }) => renderItem(item)} />
+        <FlatList data={scanList} keyExtractor={() => uuid()} renderItem={({ item }) => renderItem(item)} />
       ) : (
         <Text>No peripherals found</Text>
       )}
