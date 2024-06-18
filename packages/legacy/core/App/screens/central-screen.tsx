@@ -1,4 +1,4 @@
-// Central message handler for the application syntax:
+// Syntax of central message:
 //
 // <command_type> <peripheral_identifier>
 //

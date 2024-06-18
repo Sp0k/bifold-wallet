@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 import { TouchableOpacity, Text, View, StyleSheet, FlatList, Button } from 'react-native'
 import { CentralRequest, CentralRequestStatus, parseCentralMessage } from './central-screen'
 
-// Peripheral message handler for the application syntax:
+// Syntax of peripheral message:
 //
 // <command_type> <peripheral_identifier>
 //
@@ -17,8 +17,9 @@ import { CentralRequest, CentralRequestStatus, parseCentralMessage } from './cen
 //
 // connection_accepted XXX:XXX:XXX
 export enum PeripheralRequestStatus {
-  CONNECTION_ACCEPTED = 'connection_accepted',
-  CONNECTION_REJECTED = 'connection_rejected',
+  CONNECTION_ACCEPTED = 'connection_accepted', // Accept connection request from central
+  CONNECTION_REJECTED = 'connection_rejected', // Reject connection request from central
+  FINISHED = 'finished', // Finish connection with central
 }
 
 export interface PeripheralRequest {
