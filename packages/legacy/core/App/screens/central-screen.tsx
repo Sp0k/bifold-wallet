@@ -6,29 +6,27 @@
 //
 // connection XXX:XXX:XXX
 import { FlatList, Text, View, SafeAreaView, StyleSheet, TouchableOpacity } from 'react-native'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import style from '../../__mocks__/style'
+import {
+  Central,
+  DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
+  DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
+  DEFAULT_DIDCOMM_SERVICE_UUID,
+  useCentral,
+  useCentralOnReceivedMessage,
+} from '@animo-id/react-native-ble-didcomm'
+import { RequestMessage, parseRequestMessage, sendRequestMessage } from '../request_message'
+import { parsePeripheralMessage, PeripheralRequest, PeripheralRequestStatus } from './peripheral-screen'
 
 export enum CentralRequestStatus {
   CONNECTION = 'connection',
 }
 
-export interface CentralRequest {
-  request: CentralRequestStatus
-  identifier: string
-}
+export interface CentralRequest extends RequestMessage<CentralRequestStatus> {}
 
 export const parseCentralMessage = (message: string): CentralRequest => {
-  const [request, identifier] = message.split(' ')
-
-  if (request.length + identifier.length !== message.length) {
-    throw new Error('Invalid message format')
-  }
-
-  return {
-    request: request as CentralRequestStatus,
-    identifier,
-  }
+  return parseRequestMessage<CentralRequestStatus, CentralRequest>(message)
 }
 
 export const Connected = () => {
@@ -57,40 +55,6 @@ export const ConnectStatus = ({ item }) => {
   return <TouchableOpacity onPress={onPressHandler}>{connectionStatus ? <Connected /> : <Failed />}</TouchableOpacity>
 }
 
-const CentralScreen = () => {
-  const [scanList, setScanList] = useState([
-    'XXX:XXX',
-    'XXX:XXX',
-    'XXX:XXX',
-    'XXX:XXX',
-    'XXX:XXX',
-    'XXX:XXX',
-    'XXX:XXX',
-    'XXX:XXX',
-    'XXX:XXX',
-    'XXX:XXX',
-  ])
-
-  const renderItem = ({ item }) => (
-    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginTop: 41 }}>
-      <Text style={{ color: 'white', marginRight: 38, fontSize: 30 }}>{item}</Text>
-      <ConnectStatus item={item} />
-    </View>
-  )
-
-  return (
-    <SafeAreaView style={styles.background}>
-      {scanList ? (
-        <FlatList data={scanList} keyExtractor={(item) => item.id} renderItem={renderItem} />
-      ) : (
-        <Text>No peripherals found</Text>
-      )}
-    </SafeAreaView>
-  )
-}
-
-export default CentralScreen
-
 const styles = StyleSheet.create({
   background: {
     backgroundColor: '#151818',
@@ -110,3 +74,74 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 })
+
+const CentralScreen = () => {
+  const { central } = useCentral()
+  const [scanList, setScanList] = useState([
+    'XXX:XXX',
+    'XXX:XXX',
+    'XXX:XXX',
+    'XXX:XXX',
+    'XXX:XXX',
+    'XXX:XXX',
+    'XXX:XXX',
+    'XXX:XXX',
+    'XXX:XXX',
+    'XXX:XXX',
+  ])
+
+  const sendRequest = async (request: CentralRequest) =>
+    await sendRequestMessage<Central, CentralRequestStatus, CentralRequest>(central, request)
+
+  const handleReceivedMessage = ({ status, peripheral_identifier }: PeripheralRequest) => {
+    switch (status) {
+      case PeripheralRequestStatus.CONNECTION_ACCEPTED:
+        break
+      case PeripheralRequestStatus.CONNECTION_REJECTED:
+        break
+      case PeripheralRequestStatus.FINISHED:
+        break
+      default:
+        throw new Error('Invalid peripheral request status')
+    }
+  }
+
+  useCentralOnReceivedMessage((message) => {
+    const request = parsePeripheralMessage(message)
+
+    handleReceivedMessage(request)
+  })
+
+  const renderItem = ({ item }) => (
+    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginTop: 41 }}>
+      <Text style={{ color: 'white', marginRight: 38, fontSize: 30 }}>{item}</Text>
+      <ConnectStatus item={item} />
+    </View>
+  )
+
+  useEffect(() => {
+    central.start()
+    central.setService({
+      serviceUUID: DEFAULT_DIDCOMM_SERVICE_UUID,
+      messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
+      indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
+    })
+
+    console.log('Central started')
+    console.log('Central scan...')
+
+    central.scan()
+  }, [])
+
+  return (
+    <SafeAreaView style={styles.background}>
+      {scanList ? (
+        <FlatList data={scanList} keyExtractor={(item) => item.id} renderItem={renderItem} />
+      ) : (
+        <Text>No peripherals found</Text>
+      )}
+    </SafeAreaView>
+  )
+}
+
+export default CentralScreen

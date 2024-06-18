@@ -4,8 +4,10 @@ import {
   DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
   usePeripheral,
   usePeripheralOnReceivedMessage,
+  Peripheral,
 } from '@animo-id/react-native-ble-didcomm'
 import { useEffect, useState } from 'react'
+import { parseRequestMessage, RequestMessage, sendRequestMessage } from '../request_message'
 import { TouchableOpacity, Text, View, StyleSheet, FlatList, Button } from 'react-native'
 import { CentralRequest, CentralRequestStatus, parseCentralMessage } from './central-screen'
 
@@ -22,9 +24,10 @@ export enum PeripheralRequestStatus {
   FINISHED = 'finished', // Finish connection with central
 }
 
-export interface PeripheralRequest {
-  request: PeripheralRequestStatus
-  identifier: string
+export interface PeripheralRequest extends RequestMessage<PeripheralRequestStatus> {}
+
+export const parsePeripheralMessage = (message: string): PeripheralRequest => {
+  return parseRequestMessage<PeripheralRequestStatus, PeripheralRequest>(message)
 }
 
 const styles = StyleSheet.create({
@@ -50,8 +53,70 @@ const PeripheralScreen = () => {
   const { peripheral } = usePeripheral()
   const [showCentrals, setShowCentrals] = useState(false)
   const [centralRequests, setCentralRequests] = useState<CentralRequest[]>([
-    { request: CentralRequestStatus.CONNECTION, identifier: 'XXX:XXX:XXX' },
+    { status: CentralRequestStatus.CONNECTION, peripheral_identifier: 'XXX:XXX:XXX' },
   ])
+
+  const sendRequest = async (request: PeripheralRequest) =>
+    await sendRequestMessage<Peripheral, PeripheralRequestStatus, PeripheralRequest>(peripheral, request)
+
+  const acceptConnectionRequest = async (request: CentralRequest) => {
+    if (request.status === CentralRequestStatus.CONNECTION) {
+      await sendRequest({
+        status: PeripheralRequestStatus.CONNECTION_ACCEPTED,
+        peripheral_identifier: request.peripheral_identifier,
+      } as PeripheralRequest)
+
+      console.log('Accepted connection request')
+    } else {
+      throw new Error('Invalid request')
+    }
+  }
+
+  const rejectConnectionRequest = async (request: CentralRequest) => {
+    if (request.status === CentralRequestStatus.CONNECTION) {
+      await sendRequest({
+        status: PeripheralRequestStatus.CONNECTION_REJECTED,
+        peripheral_identifier: request.peripheral_identifier,
+      } as PeripheralRequest)
+
+      console.log('Rejected connection request')
+    } else {
+      throw new Error('Invalid request')
+    }
+  }
+
+  const onAdvertise = async () => await peripheral.advertise()
+
+  const onClose = () => setShowCentrals(false)
+
+  const renderItem = (request: CentralRequest) => (
+    <View
+      style={{ flex: 1, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: 'row', marginBottom: 20 }}
+    >
+      <Text style={{ color: '#151818', fontSize: 30 }}>{request.peripheral_identifier}</Text>
+      <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-evenly' }}>
+        <TouchableOpacity
+          style={{
+            ...styles.btn,
+            backgroundColor: '#BADFB9',
+            borderRadius: 25,
+            padding: 10,
+            width: 60,
+            height: 60,
+          }}
+          onPress={() => acceptConnectionRequest(request)}
+        >
+          <Text>✔</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ ...styles.btn, backgroundColor: '#DFC0B9', borderRadius: 25, padding: 10, width: 60, height: 60 }}
+          onPress={() => rejectConnectionRequest(request)}
+        >
+          <Text>❌</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
 
   useEffect(() => {
     peripheral.start()
@@ -70,62 +135,13 @@ const PeripheralScreen = () => {
     setShowCentrals(true)
     setCentralRequests((prev) => [...prev, centralRequest])
 
-    console.log(centralRequest)
+    console.log('Received message: ', centralRequest)
   })
-
-  const formatRequest = (request: PeripheralRequest) => `${request.request} ${request.identifier}`
-
-  const sendRequest = (request: PeripheralRequest) => {
-    const message = formatRequest(request)
-
-    console.log(`Send: ${message}`)
-
-    peripheral.sendMessage(message)
-  }
-
-  const acceptRequest = (identifier: string, request: CentralRequestStatus) => {
-    if (request === CentralRequestStatus.CONNECTION) {
-      sendRequest({ request: PeripheralRequestStatus.CONNECTION_ACCEPTED, identifier } as PeripheralRequest)
-      console.log('Accepted connection request')
-    } else {
-      throw new Error('Invalid request')
-    }
-  }
-
-  const onPress = () => console.log('Advertise')
-  const renderItem = ({ identifier, request }: CentralRequest) => (
-    <View
-      style={{ flex: 1, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: 'row', marginBottom: 20 }}
-    >
-      <Text style={{ color: '#151818', fontSize: 30 }}>{identifier}</Text>
-      <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-evenly' }}>
-        <TouchableOpacity
-          style={{
-            ...styles.btn,
-            backgroundColor: '#BADFB9',
-            borderRadius: 25,
-            padding: 10,
-            width: 60,
-            height: 60,
-          }}
-          onPress={() => acceptRequest(identifier, request)}
-        >
-          <Text>✔</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{ ...styles.btn, backgroundColor: '#DFC0B9', borderRadius: 25, padding: 10, width: 60, height: 60 }}
-          onPress={() => console.log('Reject')}
-        >
-          <Text>❌</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  )
 
   return (
     <View style={styles.background}>
       <View style={{ flex: 1, marginTop: 250 }}>
-        <TouchableOpacity onPress={onPress} style={styles.btn}>
+        <TouchableOpacity onPress={onAdvertise} style={styles.btn}>
           <Text style={{ color: '#CCF6C5', fontSize: 40 }}>Advertise</Text>
         </TouchableOpacity>
       </View>
@@ -144,7 +160,7 @@ const PeripheralScreen = () => {
           <View style={{ flex: 1, alignItems: 'flex-end' }}>
             <TouchableOpacity
               style={{ ...styles.btn, backgroundColor: '#BADFB9', borderRadius: 30, width: 60, height: 60 }}
-              onPress={() => setShowCentrals(false)}
+              onPress={onClose}
             >
               <Text>❌</Text>
             </TouchableOpacity>
