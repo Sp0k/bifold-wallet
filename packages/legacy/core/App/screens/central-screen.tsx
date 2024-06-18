@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   background: {
     backgroundColor: '#151818',
     flex: 1,
-    justifyContent: 'space-evenly',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   connection: {
@@ -113,7 +113,7 @@ const CentralScreen = () => {
   })
 
   const renderItem = ({ item }) => (
-    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginTop: 41 }}>
+    <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 41 }}>
       <Text style={{ color: 'white', marginRight: 38, fontSize: 30 }}>{item}</Text>
       <ConnectStatus item={item} />
     </View>
@@ -136,7 +136,7 @@ const CentralScreen = () => {
   return (
     <SafeAreaView style={styles.background}>
       {scanList ? (
-        <FlatList data={scanList} keyExtractor={(item) => item.id} renderItem={renderItem} />
+        <FlatList data={scanList} keyExtractor={(item) => item.id} renderItem={renderItem} style={{ width: '100%' }} />
       ) : (
         <Text>No peripherals found</Text>
       )}

@@ -140,7 +140,7 @@ const PeripheralScreen = () => {
 
   return (
     <View style={styles.background}>
-      <View style={{ flex: 1, marginTop: 250 }}>
+      <View style={{ flex: 1, marginTop: 150 }}>
         <TouchableOpacity onPress={onAdvertise} style={styles.btn}>
           <Text style={{ color: '#CCF6C5', fontSize: 40 }}>Advertise</Text>
         </TouchableOpacity>
