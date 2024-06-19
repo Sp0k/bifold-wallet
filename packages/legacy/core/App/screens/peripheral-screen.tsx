@@ -45,7 +45,8 @@ const styles = StyleSheet.create({
 
 const PeripheralScreen = () => {
   const { peripheral } = usePeripheral()
-  const [showCentrals, setShowCentrals] = useState(false)
+  const [isStarted, setIsStarted] = useState<boolean>(false)
+  const [showCentrals, setShowCentrals] = useState<boolean>(false)
   const [centralRequests, setCentralRequests] = useState<CentralRequest[]>([])
 
   const sendRequest = async (request: PeripheralRequest) =>
@@ -114,29 +115,40 @@ const PeripheralScreen = () => {
   )
 
   useEffect(() => {
-    peripheral.start()
-    peripheral.setService({
-      serviceUUID: DEFAULT_DIDCOMM_SERVICE_UUID,
-      messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
-      indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
-    })
+    const start = async () => {
+      if (!isStarted) {
+        await peripheral.start()
 
-    console.log('Peripheral started')
+        console.log('Peripheral started')
+
+        setIsStarted(true)
+
+        await peripheral.setService({
+          serviceUUID: DEFAULT_DIDCOMM_SERVICE_UUID,
+          messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
+          indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
+        })
+      }
+    }
+
+    start()
+
     // console.log('Peripheral advertised')
     // peripheral.advertise()
 
     return () => {
-      setShowCentrals(false)
+      peripheral.shutdown()
+      setIsStarted(false)
     }
   }, [])
 
   usePeripheralOnReceivedMessage((message) => {
     const centralRequest = parseCentralMessage(message)
 
+    console.log('Received message: ', centralRequest)
+
     setShowCentrals(true)
     setCentralRequests((prev) => [...prev, centralRequest])
-
-    console.log('Received message: ', centralRequest)
   })
 
   usePeripheralShutdownOnUnmount()
@@ -144,7 +156,7 @@ const PeripheralScreen = () => {
   return (
     <View style={styles.background}>
       <View style={{ flex: 1, marginTop: 150 }}>
-        <TouchableOpacity onPress={onAdvertise} style={styles.btn}>
+        <TouchableOpacity onPress={onAdvertise} style={styles.btn} disabled={!isStarted}>
           <Text style={{ color: '#CCF6C5', fontSize: 40 }}>Advertise</Text>
         </TouchableOpacity>
       </View>

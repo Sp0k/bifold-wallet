@@ -86,6 +86,7 @@ const CentralScreen = () => {
   const { central } = useCentral()
   const [peripheralId, setPeripheralId] = useState<string | undefined>(undefined)
   const [isConnected, setIsConnected] = useState<boolean>(false)
+  const [isStarted, setIsStarted] = useState<boolean>(false)
   const [scanList, setScanList] = useState<ScanResult[]>([])
 
   const sendRequest = async (request: CentralRequest) =>
@@ -177,19 +178,14 @@ const CentralScreen = () => {
   useEffect(() => {
     const onDiscoverPeripheralListener = central.registerOnDiscoveredListener(
       ({ identifier }: { identifier: string }) => {
+        const attemptFirstConnection = async () => {
+          await connect(identifier)
+          await sendRequestConnectionRequest(identifier)
+        }
+
         console.log('Peripheral discovered: ', identifier)
 
-        connect(identifier)
-          .then(() => {
-            sendRequestConnectionRequest(identifier)
-              .then(() => {})
-              .catch((err) => {
-                console.error('Request failed: ', err)
-              })
-          })
-          .catch((err) => {
-            console.error('Connection failed: ', err)
-          })
+        attemptFirstConnection()
       }
     )
 
@@ -215,24 +211,29 @@ const CentralScreen = () => {
       onReceivedMessageListener.remove()
       onConnectedCentralListener.remove()
       onDisconnectedCentralListener.remove()
-
-      setIsConnected(false)
-      setPeripheralId(undefined)
     }
-  }, [peripheralId, isConnected])
+  }, [])
 
   useEffect(() => {
-    central.start()
-    central.setService({
-      serviceUUID: DEFAULT_DIDCOMM_SERVICE_UUID,
-      messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
-      indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
-    })
+    const start = async () => {
+      if (!isStarted) {
+        await central.start()
+        setIsStarted(true)
 
-    console.log('Central started')
-    console.log('Central scan...')
+        console.log('Central started')
 
-    central.scan()
+        await central.setService({
+          serviceUUID: DEFAULT_DIDCOMM_SERVICE_UUID,
+          messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
+          indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
+        })
+
+        console.log('Central scan...')
+        await central.scan()
+      }
+    }
+
+    start()
   }, [])
 
   useCentralShutdownOnUnmount()
