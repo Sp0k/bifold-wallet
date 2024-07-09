@@ -1,5 +1,5 @@
 import { BleOutboundTransport } from '@credo-ts/transport-ble'
-import { Peripheral } from '@animo-id/react-native-ble-didcomm'
+import { Central, useCentral } from '@animo-id/react-native-ble-didcomm'
 import { Agent, HttpOutboundTransport, WsOutboundTransport } from '@credo-ts/core'
 import { useAgent } from '@credo-ts/react-hooks'
 import { agentDependencies } from '@credo-ts/react-native'
@@ -92,11 +92,14 @@ export const unregisterAllOutboundTransports = (agent: Agent) => {
   agent.outboundTransports.forEach((ot) => agent.unregisterOutboundTransport(ot))
 }
 
-export const registerOutboundTransport = async (agent: Agent, verification: VerificationID) => {
+export const registerOutboundTransport = async (agent: Agent, verification: VerificationID, central?: Central) => {
   if (verification === VerificationID.Bluetooth) {
-    const peripheral = new Peripheral()
-    await peripheral.start()
-    const bleOutboundTransport = new BleOutboundTransport(peripheral)
+    if (!central) {
+      throw new Error('Central is required for bluetooth verification')
+    }
+
+    await central.start()
+    const bleOutboundTransport = new BleOutboundTransport(central)
 
     agent.registerOutboundTransport(bleOutboundTransport)
   } else {
@@ -119,6 +122,7 @@ const Splash: React.FC = () => {
   const { setUnusedAgent } = useUnusedAgent()
   const { t } = useTranslation()
   const [store, dispatch] = useStore()
+  const { central } = useCentral()
   // const [outboundTransports, _] = useOutboundTransports()
   const navigation = useNavigation()
   const { getWalletCredentials } = useAuth()
@@ -283,7 +287,7 @@ const Splash: React.FC = () => {
           dependencies: agentDependencies,
           // modules: {}
         })
-        registerOutboundTransport(agent, VerificationID.Bluetooth)
+        registerOutboundTransport(agent, VerificationID.Bluetooth, central)
 
         return agent
       } catch (err: unknown) {
@@ -308,6 +312,8 @@ const Splash: React.FC = () => {
           store.preferences.verification !== VerificationID.QRCode
             ? initBleAgent(credentials)
             : initQRCodeAgent(credentials)
+
+        console.log(`newAgent: ${newAgent}, unusedAgent: ${unusedAgent}`)
 
         if (!newAgent || !unusedAgent) {
           const error = new BifoldError(

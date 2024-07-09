@@ -16,7 +16,7 @@ const ConnectStack: React.FC = () => {
   const Stack = createStackNavigator<ConnectStackParams>()
   const theme = useTheme()
   const defaultStackOptions = createDefaultStackOptions(theme)
-  const { scan } = useConfiguration()
+  const { scan, bluetooth } = useConfiguration()
   const { t } = useTranslation()
 
   return (
@@ -25,6 +25,11 @@ const ConnectStack: React.FC = () => {
         ...defaultStackOptions,
       }}
     >
+      <Stack.Screen
+        name={Screens.Bluetooth}
+        component={bluetooth}
+        options={{ headerBackTestID: testIdWithKey('Back') }}
+      />
       <Stack.Screen name={Screens.Scan} component={scan} options={{ headerBackTestID: testIdWithKey('Back') }} />
       <Stack.Screen
         name={Screens.PasteUrl}

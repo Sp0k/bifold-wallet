@@ -533,8 +533,10 @@ const translation = {
     "MoreInformation": "More information",
     "Developer": "Developer options",
     "Notifications": "Notifications",
+    "Bluetooth": "Scan with Bluetooth"
   },
   "TabStack": {
+    "Bluetooth": "Bluetooth",
     "Home": "Notifications",
     "Scan": "Scan",
     "Credentials": "Credentials",

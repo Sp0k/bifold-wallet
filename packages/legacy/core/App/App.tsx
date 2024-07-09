@@ -27,6 +27,8 @@ import { initLanguages, initStoredLanguage, translationResources } from './local
 import { initStoredVerification } from './verification'
 import RootStack from './navigators/RootStack'
 import { theme } from './theme'
+import { CentralProvider } from '@animo-id/react-native-ble-didcomm'
+import { Central } from '@animo-id/react-native-ble-didcomm'
 //import { credentialOfferTourSteps, credentialsTourSteps, proofRequestTourSteps } from './index'
 
 initLanguages(translationResources)
@@ -50,33 +52,35 @@ function App(sytem: Container) {
           <UnusedAgentProvider unusedAgent={undefined}>
             <AgentProvider agent={undefined}>
               <ThemeProvider value={theme}>
-                <AnimatedComponentsProvider value={animatedComponents}>
-                  <ConfigurationProvider value={defaultConfiguration}>
-                    <AuthProvider>
-                      <NetworkProvider>
-                        <StatusBar
-                          hidden={false}
-                          barStyle="light-content"
-                          backgroundColor={theme.ColorPallet.brand.primary}
-                          translucent={false}
-                        />
-                        <NetInfo />
-                        <ErrorModal />
-                        <TourProvider
-                          homeTourSteps={homeTourSteps}
-                          credentialsTourSteps={credentialsTourSteps}
-                          credentialOfferTourSteps={credentialOfferTourSteps}
-                          proofRequestTourSteps={proofRequestTourSteps}
-                          overlayColor={'gray'}
-                          overlayOpacity={0.7}
-                        >
-                          <RootStack />
-                        </TourProvider>
-                        <Toast topOffset={15} config={toastConfig} />
-                      </NetworkProvider>
-                    </AuthProvider>
-                  </ConfigurationProvider>
-                </AnimatedComponentsProvider>
+                <CentralProvider central={new Central()}>
+                  <AnimatedComponentsProvider value={animatedComponents}>
+                    <ConfigurationProvider value={defaultConfiguration}>
+                      <AuthProvider>
+                        <NetworkProvider>
+                          <StatusBar
+                            hidden={false}
+                            barStyle="light-content"
+                            backgroundColor={theme.ColorPallet.brand.primary}
+                            translucent={false}
+                          />
+                          <NetInfo />
+                          <ErrorModal />
+                          <TourProvider
+                            homeTourSteps={homeTourSteps}
+                            credentialsTourSteps={credentialsTourSteps}
+                            credentialOfferTourSteps={credentialOfferTourSteps}
+                            proofRequestTourSteps={proofRequestTourSteps}
+                            overlayColor={'gray'}
+                            overlayOpacity={0.7}
+                          >
+                            <RootStack />
+                          </TourProvider>
+                          <Toast topOffset={15} config={toastConfig} />
+                        </NetworkProvider>
+                      </AuthProvider>
+                    </ConfigurationProvider>
+                  </AnimatedComponentsProvider>
+                </CentralProvider>
               </ThemeProvider>
             </AgentProvider>
           </UnusedAgentProvider>

@@ -7,6 +7,7 @@ import { ConfigurationContext } from './contexts/configuration'
 import { useNotifications } from './hooks/notifications'
 import { Locales, translationResources } from './localization'
 import { VerificationID, verificationResources } from './verification'
+import Bluetooth from './screens/Bluetooth'
 import Developer from './screens/Developer'
 import OnboardingPages from './screens/OnboardingPages'
 import Preface from './screens/Preface'
@@ -18,7 +19,7 @@ import Verification from './screens/Verification'
 
 export const defaultConfiguration: ConfigurationContext = {
   pages: OnboardingPages,
-  splash: Splash, 
+  splash: Splash,
   terms: Terms,
   preface: Preface,
   developer: Developer,
@@ -28,6 +29,7 @@ export const defaultConfiguration: ConfigurationContext = {
   credentialListOptions: () => null,
   credentialEmptyList: EmptyList,
   scan: Scan,
+  bluetooth: Bluetooth,
   record: Record,
   PINSecurity: { rules: PINRules, displayHelper: false },
   settings: [],

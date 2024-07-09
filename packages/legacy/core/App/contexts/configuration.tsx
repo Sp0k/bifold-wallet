@@ -42,6 +42,7 @@ export interface ConfigurationContext {
   developer: React.FC
   proofTemplateBaseUrl?: string
   scan: React.FC<StackScreenProps<ConnectStackParams>>
+  bluetooth: React.FC<StackScreenProps<ConnectStackParams>>
   record: React.FC<RecordProps>
   PINSecurity: PINSecurityParams
   settings: SettingSection[]

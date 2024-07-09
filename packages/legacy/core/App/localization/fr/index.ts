@@ -514,9 +514,11 @@ const translation = {
         "Build": "Créer",
         "WhatAreContacts": "Qu’est-ce qu’un Contact?",
         "ScanMyQR": "Scanner mon code QR",
-        "Developer": "Options de développeur"
+        "Developer": "Options de développeur",
+        "Bluetooth": "Scanner avec le Bluetooth"
     },
     "TabStack": {
+	"Bluetooth": "Bluetooth",
         "Home": "Notifications",
         "Scan": "Numériser",
         "Credentials": "Justificatifs"

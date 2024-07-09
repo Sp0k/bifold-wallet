@@ -4,6 +4,7 @@ import { StackNavigationOptions } from '@react-navigation/stack'
 
 export enum Screens {
   AttemptLockout = 'Temporarily Locked',
+  Bluetooth = 'Bluetooth',
   Splash = 'Splash',
   Onboarding = 'Onboarding',
   Terms = 'Terms',
@@ -132,6 +133,7 @@ export type HomeStackParams = {
 }
 
 export type ConnectStackParams = {
+  [Screens.Bluetooth]: undefined
   [Screens.Scan]: undefined
   [Screens.NameWallet]: undefined
   [Screens.ScanHelp]: undefined

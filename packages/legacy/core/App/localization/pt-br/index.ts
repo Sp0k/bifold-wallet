@@ -503,9 +503,11 @@ const translation = {
     "AppGuides": "Guia do app",
     "WhatAreContacts": "O que são Contatos?",
     "ScanMyQR": "Scanear meu QR code",
-    "Developer": "Opções de Desenvolvedor"
+    "Developer": "Opções de Desenvolvedor",
+    "Bluetooth": "Escanear com Bluetooth"
   },
   "TabStack": {
+    "Bluetooth": "Bluetooth",
     "Home": "Notificações",
     "Scan": "Scanear",
     "Credentials": "Credenciais",

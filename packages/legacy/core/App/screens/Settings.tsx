@@ -24,6 +24,7 @@ import { GenericFn } from '../types/fn'
 import { Screens, SettingStackParams, Stacks } from '../types/navigators'
 import { SettingIcon, SettingSection } from '../types/settings'
 import { testIdWithKey } from '../utils/testable'
+import { VerificationID } from '../verification'
 
 type SettingsProps = StackScreenProps<SettingStackParams>
 
@@ -257,12 +258,17 @@ const Settings: React.FC<SettingsProps> = ({ navigation }) => {
     const section = settingsSections.find((item) => item.header.title === store.preferences.walletName)
     if (section) {
       section.data.splice(1, 0, {
-        title: t('Settings.ScanMyQR'),
-        accessibilityLabel: t('Settings.ScanMyQR'),
-        testID: testIdWithKey('ScanMyQR'),
+        title:
+          store.preferences.verification === VerificationID.QRCode ? t('Settings.ScanMyQR') : t('Settings.Bluetooth'),
+        accessibilityLabel:
+          store.preferences.verification === VerificationID.QRCode ? t('Settings.ScanMyQR') : t('Settings.Bluetooth'),
+        testID:
+          store.preferences.verification === VerificationID.QRCode
+            ? testIdWithKey('ScanMyQR')
+            : testIdWithKey('Bluetooth'), 
         onPress: () =>
           navigation.getParent()?.navigate(Stacks.ConnectStack, {
-            screen: Screens.Scan,
+            screen: store.preferences.verification === VerificationID.QRCode ? Screens.Scan : Screens.Bluetooth,
             params: { defaultToConnect: true },
           }),
       })

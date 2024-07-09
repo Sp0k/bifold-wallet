@@ -17,6 +17,8 @@ import { testIdWithKey } from '../utils/testable'
 
 import CredentialStack from './CredentialStack'
 import HomeStack from './HomeStack'
+import { useStore } from '../contexts/store'
+import { VerificationID } from '../verification/'
 
 const TabStack: React.FC = () => {
   const { fontScale } = useWindowDimensions()
@@ -27,6 +29,7 @@ const TabStack: React.FC = () => {
   const { assertConnectedNetwork } = useNetwork()
   const { ColorPallet, TabTheme, TextTheme } = useTheme()
   const [orientation, setOrientation] = useState(OrientationType.PORTRAIT)
+  const [store] = useStore()
   const showLabels = fontScale * TabTheme.tabBarTextStyle.fontSize < 18
   const styles = StyleSheet.create({
     tabBarIcon: {
@@ -127,12 +130,18 @@ const TabStack: React.FC = () => {
                         <View
                           accessible={true}
                           accessibilityRole={'button'}
-                          accessibilityLabel={t('TabStack.Scan')}
+                          accessibilityLabel={
+                            store.preferences.verification === VerificationID.Bluetooth
+                              ? t('TabStack.Bluetooth')
+                              : t('TabStack.Scan')
+                          }
                           style={{ ...TabTheme.focusTabIconStyle }}
                         >
                           <Icon
                             accessible={false}
-                            name="qrcode-scan"
+                            name={
+                              store.preferences.verification === VerificationID.QRCode ? 'qrcode-scan' : 'bluetooth'
+                            }
                             color={TabTheme.tabBarButtonIconStyle.color}
                             size={32}
                             style={{ paddingLeft: 0.5, paddingTop: 0.5 }}
@@ -145,7 +154,9 @@ const TabStack: React.FC = () => {
                             marginTop: 5,
                           }}
                         >
-                          {t('TabStack.Scan')}
+                          {store.preferences.verification === VerificationID.Bluetooth
+                            ? t('TabStack.Bluetooth')
+                            : t('TabStack.Scan')}
                         </Text>
                       </View>
                     </AttachTourStep>
@@ -154,8 +165,11 @@ const TabStack: React.FC = () => {
               </View>
             ),
             tabBarShowLabel: false,
-            tabBarAccessibilityLabel: t('TabStack.Scan'),
-            tabBarTestID: testIdWithKey(t('TabStack.Scan')),
+            tabBarAccessibilityLabel:
+              store.preferences.verification === VerificationID.QRCode ? t('TabStack.Scan') : t('TabStack.Bluetooth'),
+            tabBarTestID: testIdWithKey(
+              store.preferences.verification === VerificationID.QRCode ? t('TabStack.Scan') : t('TabStack.Bluetooth')
+            ),
           }}
           listeners={({ navigation }) => ({
             tabPress: (e) => {
@@ -163,7 +177,10 @@ const TabStack: React.FC = () => {
               if (!assertConnectedNetwork()) {
                 return
               }
-              navigation.navigate(Stacks.ConnectStack, { screen: Screens.Scan })
+              console.log(store.preferences.verification === VerificationID.QRCode)
+              navigation.navigate(Stacks.ConnectStack, {
+                screen: store.preferences.verification === VerificationID.Bluetooth ? Screens.Bluetooth : Screens.Scan,
+              })
             },
           })}
         >

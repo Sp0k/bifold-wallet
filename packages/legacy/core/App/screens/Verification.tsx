@@ -16,6 +16,7 @@ import { useStore } from '../contexts/store'
 import { unregisterAllOutboundTransports, registerOutboundTransport } from './Splash'
 import { UnusedAgent, useUnusedAgent } from '../contexts/unused_agent'
 import { Agent } from '@credo-ts/core'
+import { DispatchAction } from '../contexts/reducers/store'
 
 interface Verification {
   id: VerificationID
@@ -34,7 +35,7 @@ const Verification = () => {
   const { t } = useTranslation()
   const { ColorPallet, TextTheme, SettingsTheme } = useTheme()
   const { supportedVerifications } = useConfiguration()
-  const [store] = useStore()
+  const [store, dispatch] = useStore()
   const { agent, setAgent } = useAgent()
   const { setUnusedAgent, unusedAgent } = useUnusedAgent()
   const [storeVerification, setStoreVerification] = useState(store.preferences.verification)
@@ -73,22 +74,24 @@ const Verification = () => {
   const handleVerificationChange = async (v: Verification) => {
     if (agent) {
       if (v.id !== storeVerification && unusedAgent) {
-        const tmp = agent
+        // const tmp = agent
 
-        setUnusedAgent((prev: UnusedAgent) => {
-          if (prev) {
-            setAgent(prev)
+        // setUnusedAgent((prev: UnusedAgent) => {
+        //   if (prev) {
+        //     setAgent(prev)
 
-            return tmp
-          } else {
-            // TODO: Emit an error
-            console.log('error unused agent is not initialized')
-          }
+        //     return tmp
+        //   } else {
+        //     // TODO: Emit an error
+        //     console.log('error unused agent is not initialized')
+        //   }
 
-          return undefined
-        })
+        //   return undefined
+        // })
 
         setStoreVerification(v.id)
+        // store.preferences.verification = v.id
+        dispatch({ type: DispatchAction.VERIFICATION, payload: [v.id] })
       }
 
       console.log('hello')
@@ -120,7 +123,7 @@ const Verification = () => {
                 innerIconStyle={{ borderColor: ColorPallet.brand.primary, borderWidth: 2 }}
                 ImageComponent={() => <Icon name="circle" size={18} color={ColorPallet.brand.primary}></Icon>}
                 onPress={() => handleVerificationChange(verification)}
-                isChecked={id === currentVerification}
+                isChecked={id === store.preferences.verification}
                 disableBuiltInState
                 testID={testIdWithKey(id)}
               />

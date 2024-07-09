@@ -20,6 +20,7 @@ const configurationContext: ConfigurationContext = {
   record: Record,
   settings: [],
   developer: () => null,
+  bluetooth: () => null,
   scan: () => null,
   PINSecurity: {
     rules: {
