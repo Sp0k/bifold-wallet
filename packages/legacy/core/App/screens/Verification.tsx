@@ -90,11 +90,8 @@ const Verification = () => {
         // })
 
         setStoreVerification(v.id)
-        // store.preferences.verification = v.id
         dispatch({ type: DispatchAction.VERIFICATION, payload: [v.id] })
       }
-
-      console.log('hello')
     } else {
       console.log('error agent is not initialized')
     }

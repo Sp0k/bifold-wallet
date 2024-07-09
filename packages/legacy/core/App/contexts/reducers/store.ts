@@ -170,6 +170,27 @@ export const reducer = <S extends State>(state: S, action: ReducerAction<Dispatc
 
       return newState
     }
+    case PreferencesDispatchAction.VERIFICATION: {
+      const choice = (action?.payload ?? []).pop() ?? false
+      const preferences = {
+        ...state.preferences,
+        verification: choice,
+      }
+      const onboarding = {
+        ...state.onboarding,
+        didConsiderVerification: true,
+      }
+      const newState = {
+        ...state,
+        onboarding,
+        preferences,
+      }
+
+      AsyncStorage.setItem(LocalStorageKeys.Onboarding, JSON.stringify(onboarding))
+      AsyncStorage.setItem(LocalStorageKeys.Preferences, JSON.stringify(preferences))
+
+      return newState
+    }
     case PreferencesDispatchAction.USE_VERIFIER_CAPABILITY: {
       const choice = (action?.payload ?? []).pop() ?? false
       const preferences = {
