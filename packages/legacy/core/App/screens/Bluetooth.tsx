@@ -102,7 +102,7 @@ const Bluetooth: React.FC<BluetoothProps> = () => {
 
   return (
     <View>
-      {discoveredDevices ? (
+      {discoveredDevices.length > 0 ? (
         <FlatList
           data={discoveredDevices}
           numColumns={1}
