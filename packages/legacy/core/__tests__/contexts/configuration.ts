@@ -44,7 +44,6 @@ const configurationContext: ConfigurationContext = {
     pageTitle: '',
   },
   useCustomNotifications: useNotifications,
-  proofRequestTemplates: useProofRequestTemplates,
   supportedLanguages: [Locales.en, Locales.fr, Locales.ptBr],
   supportedVerifications: [VerificationID.Bluetooth, VerificationID.QRCode],
   whereToUseWalletUrl: 'https://example.com',
