@@ -46,7 +46,7 @@ const Bluetooth: React.FC<BluetoothProps> = () => {
     askPermissions()
   })
 
-  useEffect(() => { 
+  useEffect(() => {
     const init = async () => {
       await central.start()
       await central.setService({
@@ -56,7 +56,7 @@ const Bluetooth: React.FC<BluetoothProps> = () => {
       })
       await central.scan()
 
-      console.log("Scan...")
+      console.log('Scan...')
     }
 
     const deinit = async () => {
