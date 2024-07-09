@@ -1,8 +1,8 @@
 import { StackScreenProps } from '@react-navigation/stack'
 
 import { ConnectStackParams } from '../types/navigators'
-import { Button, View, FlatList, Text } from 'react-native'
-import { useEffect } from 'react'
+import { Button, View, FlatList, Text, PermissionsAndroid } from 'react-native'
+import { useEffect, useState } from 'react'
 import { uuid } from '@credo-ts/core/build/utils/uuid'
 import {
   useCentral,
@@ -14,8 +14,6 @@ import {
   DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
   useCentralShutdownOnUnmount,
 } from '@animo-id/react-native-ble-didcomm'
-import { useState } from 'react'
-import { PermissionsAndroid } from 'react-native'
 
 export type BluetoothProps = StackScreenProps<ConnectStackParams>
 
