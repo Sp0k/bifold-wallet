@@ -19,7 +19,6 @@ import _defaultReducer, { ReducerAction } from '../contexts/reducers/store'
 import { EventTypes } from '../constants'
 import { TOKENS, useContainer } from '../container-api'
 import { useAnimatedComponents } from '../contexts/animated-components'
-import { useUnusedAgent } from '../contexts/unused_agent'
 import { useAuth } from '../contexts/auth'
 import { useConfiguration } from '../contexts/configuration'
 import { DispatchAction } from '../contexts/reducers/store'
@@ -92,23 +91,14 @@ export const unregisterAllOutboundTransports = (agent: Agent) => {
   agent.outboundTransports.forEach((ot) => agent.unregisterOutboundTransport(ot))
 }
 
-export const registerOutboundTransport = async (agent: Agent, verification: VerificationID, central?: Central) => {
-  if (verification === VerificationID.Bluetooth) {
-    if (!central) {
-      throw new Error('Central is required for bluetooth verification')
-    }
+export const registerOutboundTransport = async (agent: Agent, verification: VerificationID, central: Central) => {
+  const wsTransport = new WsOutboundTransport()
+  const httpTransport = new HttpOutboundTransport()
+  const bleOutboundTransport = new BleOutboundTransport(central)
 
-    await central.start()
-    const bleOutboundTransport = new BleOutboundTransport(central)
-
-    agent.registerOutboundTransport(bleOutboundTransport)
-  } else {
-    const wsTransport = new WsOutboundTransport()
-    const httpTransport = new HttpOutboundTransport()
-
-    agent.registerOutboundTransport(wsTransport)
-    agent.registerOutboundTransport(httpTransport)
-  }
+  agent.registerOutboundTransport(wsTransport)
+  agent.registerOutboundTransport(httpTransport)
+  agent.registerOutboundTransport(bleOutboundTransport)
 }
 
 /**
@@ -119,7 +109,6 @@ export const registerOutboundTransport = async (agent: Agent, verification: Veri
 const Splash: React.FC = () => {
   const { showPreface, enablePushNotifications } = useConfiguration()
   const { setAgent } = useAgent()
-  const { setUnusedAgent } = useUnusedAgent()
   const { t } = useTranslation()
   const [store, dispatch] = useStore()
   const { central } = useCentral()
@@ -247,7 +236,7 @@ const Splash: React.FC = () => {
       DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
     }
 
-    const initQRCodeAgent = (credentials: WalletSecret): Agent | undefined => {
+    const configureAgent = (credentials: WalletSecret): Agent | undefined => {
       try {
         const agent = new Agent({
           config: {
@@ -266,28 +255,7 @@ const Splash: React.FC = () => {
           }),
         })
 
-        registerOutboundTransport(agent, VerificationID.QRCode)
-
-        return agent
-      } catch (err: unknown) {
-        initAgentEmitError(err)
-      }
-    }
-
-    const initBleAgent = (credentials: WalletSecret): Agent | undefined => {
-      try {
-        const agent = new Agent({
-          config: {
-            label: 'd',
-            walletConfig: {
-              id: credentials.id,
-              key: credentials.key ?? '',
-            },
-          },
-          dependencies: agentDependencies,
-          // modules: {}
-        })
-        registerOutboundTransport(agent, VerificationID.Bluetooth, central)
+        registerOutboundTransport(agent, VerificationID.QRCode, central)
 
         return agent
       } catch (err: unknown) {
@@ -304,18 +272,9 @@ const Splash: React.FC = () => {
           return
         }
 
-        const newAgent =
-          store.preferences.verification === VerificationID.QRCode
-            ? initQRCodeAgent(credentials)
-            : initBleAgent(credentials)
-        const unusedAgent =
-          store.preferences.verification !== VerificationID.QRCode
-            ? initBleAgent(credentials)
-            : initQRCodeAgent(credentials)
+        const newAgent = configureAgent(credentials)
 
-        console.log(`newAgent: ${newAgent}, unusedAgent: ${unusedAgent}`)
-
-        if (!newAgent || !unusedAgent) {
+        if (!newAgent) {
           const error = new BifoldError(
             t('Error.Title1045'),
             t('Error.Message1045'),
@@ -341,12 +300,10 @@ const Splash: React.FC = () => {
         }
 
         await newAgent.initialize()
-        await unusedAgent.initialize()
 
         await createLinkSecretIfRequired(newAgent)
 
         setAgent(newAgent)
-        setUnusedAgent(unusedAgent)
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
