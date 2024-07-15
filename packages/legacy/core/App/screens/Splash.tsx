@@ -83,11 +83,12 @@ const resumeOnboardingAt = (
   return Screens.Preface
 }
 
-export const unregisterAllOutboundTransports = (agent: Agent) => {
+export const unregisterAllTransports = (agent: Agent) => {
   agent.outboundTransports.forEach((ot) => agent.unregisterOutboundTransport(ot))
+  agent.inboundTransports.forEach((it) => agent.unregisterInboundTransport(it))
 }
 
-export const registerOutboundTransport = async (agent: Agent, central: Central) => {
+export const registerTransports = async (agent: Agent, central: Central) => {
   const wsTransport = new WsOutboundTransport()
   const httpTransport = new HttpOutboundTransport()
   const bleInboundTransport = new BleInboundTransport(central)
@@ -250,7 +251,7 @@ const Splash: React.FC = () => {
           }),
         })
 
-        registerOutboundTransport(agent, central)
+        registerTransports(agent, central)
 
         return agent
       } catch (err: unknown) {
