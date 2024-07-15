@@ -1,4 +1,4 @@
-import { BleOutboundTransport } from '@credo-ts/transport-ble'
+import { BleInboundTransport } from '@credo-ts/transport-ble'
 import { Central, useCentral } from '@animo-id/react-native-ble-didcomm'
 import { Agent, HttpOutboundTransport, WsOutboundTransport } from '@credo-ts/core'
 import { useAgent } from '@credo-ts/react-hooks'
@@ -90,11 +90,11 @@ export const unregisterAllOutboundTransports = (agent: Agent) => {
 export const registerOutboundTransport = async (agent: Agent, central: Central) => {
   const wsTransport = new WsOutboundTransport()
   const httpTransport = new HttpOutboundTransport()
-  const bleOutboundTransport = new BleOutboundTransport(central)
+  const bleInboundTransport = new BleInboundTransport(central)
 
   agent.registerOutboundTransport(wsTransport)
   agent.registerOutboundTransport(httpTransport)
-  agent.registerOutboundTransport(bleOutboundTransport)
+  agent.registerInboundTransport(bleInboundTransport)
 }
 
 /**
