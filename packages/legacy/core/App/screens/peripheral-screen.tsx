@@ -3,30 +3,33 @@ import {
   usePeripheralOnReceivedMessage,
   Peripheral,
   usePeripheralShutdownOnUnmount,
+  DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
+  DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
+  DEFAULT_DIDCOMM_SERVICE_UUID,
 } from '@animo-id/react-native-ble-didcomm'
 import { useEffect, useState } from 'react'
 import { parseRequestMessage, RequestMessage, sendRequestMessage } from '../request_message'
 import { TouchableOpacity, Text, View, StyleSheet, FlatList, Button, DeviceEventEmitter } from 'react-native'
 import { CentralRequest, CentralRequestStatus, parseCentralMessage } from './central-screen'
 import { useAgent } from '@credo-ts/react-hooks'
-import { WalletSecret } from 'types/security'
+import { WalletSecret } from '../types/security'
 import { Agent } from '@credo-ts/core'
-import { createLinkSecretIfRequired, getAgentModules } from 'utils/agent'
-import { BifoldError } from 'types/error'
+import { createLinkSecretIfRequired, getAgentModules } from '../utils/agent'
+import { BifoldError } from '../types/error'
 import { EventTypes } from '../constants'
-import { didMigrateToAskar, migrateToAskar } from 'utils/migration'
+import { didMigrateToAskar, migrateToAskar } from '../utils/migration'
 import { CommonActions } from '@react-navigation/core'
 import { useStore } from '../contexts/store'
-import { TOKENS, useContainer } from 'container-api'
+import { TOKENS, useContainer } from '../container-api'
 import { Config } from 'react-native-config'
 import { BleOutboundTransport } from '@credo-ts/transport-ble'
 import { agentDependencies } from '@credo-ts/react-native'
 import { useTranslation } from 'react-i18next'
-import { RemoteOCABundleResolver } from '@hyperledger/aries-oca/build/legacy'
-import { useAuth } from 'contexts/auth'
+import { useAuth } from '../contexts/auth'
 import { DispatchAction } from '../contexts/reducers/store'
 import { useNavigation } from '@react-navigation/core'
 import { Stacks } from '../types/navigators'
+import { uuid } from '@credo-ts/core/build/utils/uuid'
 
 export enum PeripheralRequestStatus {
   CONNECTION_ACCEPTED = 'connection_accepted', // Accept connection request from central
@@ -73,11 +76,8 @@ const PeripheralScreen = () => {
   const { agent, setAgent } = useAgent()
   const [store, dispatch] = useStore()
   const container = useContainer()
-  const logger = container.resolve(TOKENS.UTIL_LOGGER)
-  const indyLedgers = container.resolve(TOKENS.UTIL_LEDGERS)
   const [mounted, setMounted] = useState(false)
   const { t } = useTranslation()
-  const ocaBundleResolver = container.resolve(TOKENS.UTIL_OCA_RESOLVER) as RemoteOCABundleResolver
   const { getWalletCredentials } = useAuth()
   const navigation = useNavigation()
 
@@ -169,14 +169,10 @@ const PeripheralScreen = () => {
               id: credentials.id,
               key: credentials.key ?? '',
             },
-            logger,
             autoUpdateStorageOnStartup: true,
           },
           dependencies: agentDependencies,
-          modules: getAgentModules({
-            indyNetworks: indyLedgers,
-            mediatorInvitationUrl: Config.MEDIATOR_URL,
-          }),
+          modules: {},
         })
 
         registerOutboundTransport(agent, peripheral)
@@ -189,7 +185,13 @@ const PeripheralScreen = () => {
 
     const initAgent = async (): Promise<void> => {
       try {
-        await ocaBundleResolver.checkForUpdates?.()
+        await peripheral.start()
+        await peripheral.setService({
+          serviceUUID: uuid() || DEFAULT_DIDCOMM_SERVICE_UUID,
+          messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
+          indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
+        })
+
         const credentials = await getWalletCredentials()
 
         if (!credentials?.id || !credentials.key) {
@@ -244,14 +246,22 @@ const PeripheralScreen = () => {
       }
     }
 
+    const advertise = async () => {
+      await peripheral.advertise()
+      console.log('Peripheral Advertised')
+    }
+
     initAgent()
+    advertise()
+
+    console.log('Mounted')
 
     return () => {
       if (agent) {
         agent.shutdown()
       }
     }
-  }, [mounted, store.authentication.didAuthenticate, store.onboarding.didConsiderBiometry])
+  }, [])
 
   usePeripheralOnReceivedMessage((message) => {
     const centralRequest = parseCentralMessage(message)
