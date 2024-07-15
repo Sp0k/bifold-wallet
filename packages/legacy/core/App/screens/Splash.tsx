@@ -6,15 +6,12 @@ import { agentDependencies } from '@credo-ts/react-native'
 import { RemoteOCABundleResolver } from '@hyperledger/aries-oca/build/legacy'
 import { useNavigation } from '@react-navigation/core'
 import { CommonActions } from '@react-navigation/native'
-import React, { createContext, Dispatch, useContext, useReducer, useEffect, useState, Children } from 'react'
-import _defaultReducer, { ReducerAction } from '../contexts/reducers/store'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DeviceEventEmitter, StyleSheet } from 'react-native'
 import { Config } from 'react-native-config'
 import { WalletSecret } from '../types/security'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { State } from '../types/state'
-import _defaultReducer, { ReducerAction } from '../contexts/reducers/store'
 
 import { EventTypes } from '../constants'
 import { TOKENS, useContainer } from '../container-api'
@@ -29,7 +26,6 @@ import { Screens, Stacks } from '../types/navigators'
 import { Onboarding as StoreOnboardingState } from '../types/state'
 import { getAgentModules, createLinkSecretIfRequired } from '../utils/agent'
 import { migrateToAskar, didMigrateToAskar } from '../utils/migration'
-import { VerificationID } from '../verification'
 
 const OnboardingVersion = 1
 
@@ -91,7 +87,7 @@ export const unregisterAllOutboundTransports = (agent: Agent) => {
   agent.outboundTransports.forEach((ot) => agent.unregisterOutboundTransport(ot))
 }
 
-export const registerOutboundTransport = async (agent: Agent, verification: VerificationID, central: Central) => {
+export const registerOutboundTransport = async (agent: Agent, central: Central) => {
   const wsTransport = new WsOutboundTransport()
   const httpTransport = new HttpOutboundTransport()
   const bleOutboundTransport = new BleOutboundTransport(central)
@@ -112,7 +108,6 @@ const Splash: React.FC = () => {
   const { t } = useTranslation()
   const [store, dispatch] = useStore()
   const { central } = useCentral()
-  // const [outboundTransports, _] = useOutboundTransports()
   const navigation = useNavigation()
   const { getWalletCredentials } = useAuth()
   const { ColorPallet } = useTheme()
@@ -255,7 +250,7 @@ const Splash: React.FC = () => {
           }),
         })
 
-        registerOutboundTransport(agent, VerificationID.QRCode, central)
+        registerOutboundTransport(agent, central)
 
         return agent
       } catch (err: unknown) {
@@ -265,6 +260,7 @@ const Splash: React.FC = () => {
 
     const initAgent = async (): Promise<void> => {
       try {
+        await ocaBundleResolver.checkForUpdates?.()
         const credentials = await getWalletCredentials()
 
         if (!credentials?.id || !credentials.key) {
