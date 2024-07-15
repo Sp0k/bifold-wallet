@@ -1,7 +1,4 @@
 import {
-  DEFAULT_DIDCOMM_SERVICE_UUID,
-  DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
-  DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
   usePeripheral,
   usePeripheralOnReceivedMessage,
   Peripheral,
@@ -9,8 +6,27 @@ import {
 } from '@animo-id/react-native-ble-didcomm'
 import { useEffect, useState } from 'react'
 import { parseRequestMessage, RequestMessage, sendRequestMessage } from '../request_message'
-import { TouchableOpacity, Text, View, StyleSheet, FlatList, Button } from 'react-native'
+import { TouchableOpacity, Text, View, StyleSheet, FlatList, Button, DeviceEventEmitter } from 'react-native'
 import { CentralRequest, CentralRequestStatus, parseCentralMessage } from './central-screen'
+import { useAgent } from '@credo-ts/react-hooks'
+import { WalletSecret } from 'types/security'
+import { Agent } from '@credo-ts/core'
+import { createLinkSecretIfRequired, getAgentModules } from 'utils/agent'
+import { BifoldError } from 'types/error'
+import { EventTypes } from '../constants'
+import { didMigrateToAskar, migrateToAskar } from 'utils/migration'
+import { CommonActions } from '@react-navigation/core'
+import { useStore } from '../contexts/store'
+import { TOKENS, useContainer } from 'container-api'
+import { Config } from 'react-native-config'
+import { BleOutboundTransport } from '@credo-ts/transport-ble'
+import { agentDependencies } from '@credo-ts/react-native'
+import { useTranslation } from 'react-i18next'
+import { RemoteOCABundleResolver } from '@hyperledger/aries-oca/build/legacy'
+import { useAuth } from 'contexts/auth'
+import { DispatchAction } from '../contexts/reducers/store'
+import { useNavigation } from '@react-navigation/core'
+import { Stacks } from '../types/navigators'
 
 export enum PeripheralRequestStatus {
   CONNECTION_ACCEPTED = 'connection_accepted', // Accept connection request from central
@@ -22,6 +38,12 @@ export interface PeripheralRequest extends RequestMessage<PeripheralRequestStatu
 
 export const parsePeripheralMessage = (message: string): PeripheralRequest => {
   return parseRequestMessage<PeripheralRequestStatus, PeripheralRequest>(message)
+}
+
+export const registerOutboundTransport = (agent: Agent, peripheral: Peripheral) => {
+  const bleOutboundTransport = new BleOutboundTransport(peripheral)
+
+  agent.registerOutboundTransport(bleOutboundTransport)
 }
 
 const styles = StyleSheet.create({
@@ -48,6 +70,16 @@ const PeripheralScreen = () => {
   const [isStarted, setIsStarted] = useState<boolean>(false)
   const [showCentrals, setShowCentrals] = useState<boolean>(false)
   const [centralRequests, setCentralRequests] = useState<CentralRequest[]>([])
+  const { agent, setAgent } = useAgent()
+  const [store, dispatch] = useStore()
+  const container = useContainer()
+  const logger = container.resolve(TOKENS.UTIL_LOGGER)
+  const indyLedgers = container.resolve(TOKENS.UTIL_LEDGERS)
+  const [mounted, setMounted] = useState(false)
+  const { t } = useTranslation()
+  const ocaBundleResolver = container.resolve(TOKENS.UTIL_OCA_RESOLVER) as RemoteOCABundleResolver
+  const { getWalletCredentials } = useAuth()
+  const navigation = useNavigation()
 
   const sendRequest = async (request: PeripheralRequest) =>
     await sendRequestMessage<Peripheral, PeripheralRequestStatus, PeripheralRequest>(peripheral, request)
@@ -115,32 +147,111 @@ const PeripheralScreen = () => {
   )
 
   useEffect(() => {
-    const start = async () => {
-      if (!isStarted) {
-        await peripheral.start()
+    setMounted(true)
+  }, [])
 
-        console.log('Peripheral started')
+  useEffect(() => {
+    if (!mounted || !store.authentication.didAuthenticate || !store.onboarding.didConsiderBiometry) {
+      return
+    }
 
-        setIsStarted(true)
+    const initAgentEmitError = (err: unknown) => {
+      const error = new BifoldError(t('Error.Title1045'), t('Error.Message1045'), (err as Error)?.message ?? err, 1045)
+      DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
+    }
 
-        await peripheral.setService({
-          serviceUUID: DEFAULT_DIDCOMM_SERVICE_UUID,
-          messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
-          indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
+    const configureAgent = (credentials: WalletSecret): Agent | undefined => {
+      try {
+        const agent = new Agent({
+          config: {
+            label: store.preferences.walletName || 'Aries Bifold',
+            walletConfig: {
+              id: credentials.id,
+              key: credentials.key ?? '',
+            },
+            logger,
+            autoUpdateStorageOnStartup: true,
+          },
+          dependencies: agentDependencies,
+          modules: getAgentModules({
+            indyNetworks: indyLedgers,
+            mediatorInvitationUrl: Config.MEDIATOR_URL,
+          }),
         })
+
+        registerOutboundTransport(agent, peripheral)
+
+        return agent
+      } catch (err: unknown) {
+        initAgentEmitError(err)
       }
     }
 
-    start()
+    const initAgent = async (): Promise<void> => {
+      try {
+        await ocaBundleResolver.checkForUpdates?.()
+        const credentials = await getWalletCredentials()
 
-    // console.log('Peripheral advertised')
-    // peripheral.advertise()
+        if (!credentials?.id || !credentials.key) {
+          // Cannot find wallet id/secret
+          return
+        }
+
+        const newAgent = configureAgent(credentials)
+
+        if (!newAgent) {
+          const error = new BifoldError(
+            t('Error.Title1045'),
+            t('Error.Message1045'),
+            'Failed to initialize agent',
+            1045
+          )
+          DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
+
+          return
+        }
+
+        if (!didMigrateToAskar(store.migration)) {
+          newAgent.config.logger.debug('Agent not updated to Aries Askar, updating...')
+
+          await migrateToAskar(credentials.id, credentials.key, newAgent)
+
+          newAgent.config.logger.debug('Successfully finished updating agent to Aries Askar')
+          dispatch({
+            type: DispatchAction.DID_MIGRATE_TO_ASKAR,
+          })
+        }
+
+        await newAgent.initialize()
+
+        await createLinkSecretIfRequired(newAgent)
+
+        setAgent(newAgent)
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: Stacks.TabStack }],
+          })
+        )
+      } catch (err: unknown) {
+        const error = new BifoldError(
+          t('Error.Title1045'),
+          t('Error.Message1045'),
+          (err as Error)?.message ?? err,
+          1045
+        )
+        DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
+      }
+    }
+
+    initAgent()
 
     return () => {
-      peripheral.shutdown()
-      setIsStarted(false)
+      if (agent) {
+        agent.shutdown()
+      }
     }
-  }, [])
+  }, [mounted, store.authentication.didAuthenticate, store.onboarding.didConsiderBiometry])
 
   usePeripheralOnReceivedMessage((message) => {
     const centralRequest = parseCentralMessage(message)
