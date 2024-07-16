@@ -210,9 +210,9 @@ const CentralScreen = () => {
   }, [])
 
   useEffect(() => {
-    if (!mounted || !store.authentication.didAuthenticate || !store.onboarding.didConsiderBiometry) {
-      return
-    }
+    // if (!mounted || !store.authentication.didAuthenticate || !store.onboarding.didConsiderBiometry) {
+    //   return
+    // }
 
     const initAgentEmitError = (err: unknown) => {
       const error = new BifoldError(t('Error.Title1045'), t('Error.Message1045'), (err as Error)?.message ?? err, 1045)
@@ -243,15 +243,17 @@ const CentralScreen = () => {
     }
 
     const initAgent = async (): Promise<void> => {
-      await central.start()
-
       try {
         await central.start()
+		central.registerOnDiscoveredListener(({ identifier } : { identifier: string }) => {
+			console.log(`Discovered: ${identifier}`);
+	  	})
         await central.setService({
           serviceUUID: uuid() || DEFAULT_DIDCOMM_SERVICE_UUID,
           messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
           indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
         })
+		await central.scan()
 
         const credentials = await getWalletCredentials()
 
@@ -310,7 +312,6 @@ const CentralScreen = () => {
     }
 
     const scan = async () => {
-      central.scan()
       console.log('Central Scanning...')
     }
 
