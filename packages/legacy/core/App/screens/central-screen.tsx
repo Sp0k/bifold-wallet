@@ -111,7 +111,7 @@ const CentralScreen = () => {
   const [isConnected, setIsConnected] = useState<boolean>(false)
   const [isStarted, setIsStarted] = useState<boolean>(false)
   const [scanList, setScanList] = useState<ScanResult[]>([])
-  const { setAgent } = useAgent()
+  const { setAgent, agent } = useAgent()
   const { t } = useTranslation()
   const [store, dispatch] = useStore()
   const navigation = useNavigation()
@@ -243,18 +243,7 @@ const CentralScreen = () => {
     }
 
     const initAgent = async (): Promise<void> => {
-      try {
-        await central.start()
-		central.registerOnDiscoveredListener(({ identifier } : { identifier: string }) => {
-			console.log(`Discovered: ${identifier}`);
-	  	})
-        await central.setService({
-          serviceUUID: uuid() || DEFAULT_DIDCOMM_SERVICE_UUID,
-          messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
-          indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
-        })
-		await central.scan()
-
+      try { 
         const credentials = await getWalletCredentials()
 
         if (!credentials?.id || !credentials.key) {
@@ -311,13 +300,34 @@ const CentralScreen = () => {
       }
     }
 
-    const scan = async () => {
-      console.log('Central Scanning...')
+    const startScan = async () => {
+		await central.start()
+		central.registerOnDiscoveredListener(({ identifier } : { identifier: string }) => {
+			console.log(`Discovered: ${identifier}`);
+			try {
+				central.connect(identifier)
+				console.log(`Connect to ${identifier}`);
+			} catch {
+				console.error("Connection error, connect to the next one")
+			}
+	  	})
+        await central.setService({
+          serviceUUID: DEFAULT_DIDCOMM_SERVICE_UUID,
+          messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
+          indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
+        })
+		await central.scan()
+		console.log('Central Scanning...')
     }
 
     initAgent()
+    startScan()
 
-    scan()
+	return () => {
+		if (agent) {
+			agent.shutdown()
+		}
+	}
   }, [])
 
   return (

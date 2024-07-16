@@ -184,15 +184,7 @@ const PeripheralScreen = () => {
     }
 
     const initAgent = async (): Promise<void> => {
-      try {
-        await peripheral.start()
-        await peripheral.setService({
-          serviceUUID: uuid() || DEFAULT_DIDCOMM_SERVICE_UUID,
-          messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
-          indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
-        })
-		await peripheral.advertise()
-
+      try { 
         const credentials = await getWalletCredentials()
 
         if (!credentials?.id || !credentials.key) {
@@ -247,14 +239,19 @@ const PeripheralScreen = () => {
       }
     }
 
-    const advertise = async () => {
-      console.log('Peripheral Advertised')
+    const startAdvertise = async () => {
+		await peripheral.start()
+        await peripheral.setService({
+          serviceUUID: DEFAULT_DIDCOMM_SERVICE_UUID,
+          messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
+          indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
+        })
+		await peripheral.advertise()
+		console.log('Peripheral Advertised')
     }
 
     initAgent()
-    advertise()
-
-    console.log('Mounted')
+    startAdvertise()
 
     return () => {
       if (agent) {
