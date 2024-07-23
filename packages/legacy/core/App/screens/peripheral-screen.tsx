@@ -241,6 +241,9 @@ const PeripheralScreen = () => {
 
     const startAdvertise = async () => {
 		await peripheral.start()
+		peripheral.registerMessageListener(({ message }: { message: string }) => {
+			console.log(`Peripheral got message: ${message}`);
+		});
         await peripheral.setService({
           serviceUUID: DEFAULT_DIDCOMM_SERVICE_UUID,
           messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,

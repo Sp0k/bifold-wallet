@@ -307,6 +307,7 @@ const CentralScreen = () => {
 			try {
 				central.connect(identifier)
 				console.log(`Connect to ${identifier}`);
+				central.sendMessage("Hello, World").catch(() => console.log("error, message sending"));
 			} catch {
 				console.error("Connection error, connect to the next one")
 			}
