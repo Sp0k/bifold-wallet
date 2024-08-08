@@ -68,6 +68,10 @@ const styles = StyleSheet.create({
   },
 })
 
+interface ReceivedMessage {
+	content: string
+}
+
 const PeripheralScreen = () => {
   const { peripheral } = usePeripheral()
   const [isStarted, setIsStarted] = useState<boolean>(false)
@@ -79,6 +83,7 @@ const PeripheralScreen = () => {
   const [mounted, setMounted] = useState(false)
   const { t } = useTranslation()
   const { getWalletCredentials } = useAuth()
+  const [receivedMessages, setReceivedMessages] = useState<ReceivedMessage[]>([]);
   const navigation = useNavigation()
 
   const sendRequest = async (request: PeripheralRequest) =>
@@ -144,6 +149,12 @@ const PeripheralScreen = () => {
         </TouchableOpacity>
       </View>
     </View>
+  )
+
+  const renderMessage = (receivedMessage: ReceivedMessage) => (
+	  <View>
+		  <Text>{receivedMessage.content}</Text>
+	  </View>
   )
 
   useEffect(() => {
@@ -242,6 +253,8 @@ const PeripheralScreen = () => {
     const startAdvertise = async () => {
 		await peripheral.start()
 		peripheral.registerMessageListener(({ message }: { message: string }) => {
+			setReceivedMessages([...receivedMessages, { content: message } as ReceivedMessage])
+			console.log(receivedMessages.length);
 			console.log(`Peripheral got message: ${message}`);
 		});
         await peripheral.setService({
@@ -263,23 +276,12 @@ const PeripheralScreen = () => {
     }
   }, [])
 
-  usePeripheralOnReceivedMessage((message) => {
-    const centralRequest = parseCentralMessage(message)
-
-    console.log('Received message: ', centralRequest)
-
-    setShowCentrals(true)
-    setCentralRequests((prev) => [...prev, centralRequest])
-  })
-
   usePeripheralShutdownOnUnmount()
 
   return (
     <View style={styles.background}>
       <View style={{ flex: 1, marginTop: 150 }}>
-        <TouchableOpacity onPress={onAdvertise} style={styles.btn} disabled={!isStarted}>
-          <Text style={{ color: '#CCF6C5', fontSize: 40 }}>Advertise</Text>
-        </TouchableOpacity>
+		<Button onPress={onAdvertise} title="Advertise" color="#CCF6C5"/>
       </View>
       {showCentrals && (
         <View
@@ -302,6 +304,7 @@ const PeripheralScreen = () => {
             </TouchableOpacity>
           </View>
           <FlatList style={{ marginBottom: 80 }} data={centralRequests} renderItem={({ item }) => renderItem(item)} />
+		  <FlatList style={{ marginTop: 80 }} data={receivedMessages} renderItem={({ item }) => renderMessage(item)} />
         </View>
       )}
     </View>

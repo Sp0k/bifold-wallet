@@ -1,4 +1,4 @@
-import { FlatList, Text, View, SafeAreaView, StyleSheet, TouchableOpacity, DeviceEventEmitter } from 'react-native'
+import { Button, FlatList, Text, View, SafeAreaView, StyleSheet, TouchableOpacity, DeviceEventEmitter } from 'react-native'
 import { useEffect, useState } from 'react'
 import {
   Central,
@@ -59,6 +59,14 @@ export const Connected = () => {
   )
 }
 
+export const Loading = () => {
+	return (
+		<View style={[styles.connection, { backgroundColor: '#A6A39C' }]}>
+			<Text style={styles.text}>LOADING</Text>
+		</View>
+	)
+}
+
 export const Failed = () => {
   return (
     <View style={[styles.connection, { backgroundColor: '#F0ACAC' }]}>
@@ -69,6 +77,7 @@ export const Failed = () => {
 
 enum ScanResultStatus {
   ACCEPTED = 'Accepted',
+  LOADING = 'Loading',
   REJECTED = 'Rejected',
 }
 
@@ -82,7 +91,14 @@ interface ConnectStatusProps {
 }
 
 export const ConnectStatus = ({ status }: ConnectStatusProps) => {
-  return <TouchableOpacity>{status === ScanResultStatus.ACCEPTED ? <Connected /> : <Failed />}</TouchableOpacity>
+  switch (status) {
+	  case ScanResultStatus.ACCEPTED:
+		  return <TouchableOpacity><Connected /></TouchableOpacity>
+	  case ScanResultStatus.REJECTED:
+		  return <TouchableOpacity><Failed /></TouchableOpacity>
+	  case ScanResultStatus.LOADING:
+		  return <TouchableOpacity><Loading /></TouchableOpacity>
+  }
 }
 
 const styles = StyleSheet.create({
@@ -118,22 +134,10 @@ const CentralScreen = () => {
   const { getWalletCredentials } = useAuth()
   const container = useContainer()
   const [mounted, setMounted] = useState(false)
+  const [readyToConnect, setReadyToConnect] = useState<string | undefined>(undefined);
 
   const sendRequest = async (request: CentralRequest) =>
     await sendRequestMessage<Central, CentralRequestStatus, CentralRequest>(central, request)
-
-  const connect = async (pid: string) => {
-    if (peripheralId) {
-      throw new Error('An other peripheral is already connected')
-    } else {
-      console.log('Peripheral connected: ', pid)
-
-      setPeripheralId(pid)
-      // TODO: Maybe create a custom hook...
-      await central.connect(pid)
-      setIsConnected(true)
-    }
-  }
 
   const disconnect = () => {
     if (peripheralId) {
@@ -300,29 +304,31 @@ const CentralScreen = () => {
       }
     }
 
-    const startScan = async () => {
+	const startCentral = async () => {
 		await central.start()
-		central.registerOnDiscoveredListener(({ identifier } : { identifier: string }) => {
+		central.registerOnDiscoveredListener(async ({ identifier } : { identifier: string }) => {
 			console.log(`Discovered: ${identifier}`);
-			try {
-				central.connect(identifier)
-				console.log(`Connect to ${identifier}`);
-				central.sendMessage("Hello, World").catch(() => console.log("error, message sending"));
-			} catch {
-				console.error("Connection error, connect to the next one")
+
+			if (scanList.filter((scan) => scan.peripheral_id === identifier).length === 0) {
+				setScanList([...scanList, { peripheral_id: identifier, status: ScanResultStatus.LOADING } as ScanResult]);
+				setReadyToConnect(identifier);
 			}
 	  	})
+		central.registerOnConnectedListener(async ({ identifier } : { identifier: string}) => {
+			console.log(`Connect to ${identifier}`);
+			central.sendMessage("Hello, World")
+				.then(() => console.log("Success to send a message"))
+				.catch(() => console.log("error, message sending"));
+		});
         await central.setService({
           serviceUUID: DEFAULT_DIDCOMM_SERVICE_UUID,
           messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
           indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
         })
-		await central.scan()
-		console.log('Central Scanning...')
-    }
+	}
 
     initAgent()
-    startScan()
+	startCentral()
 
 	return () => {
 		if (agent) {
@@ -331,8 +337,39 @@ const CentralScreen = () => {
 	}
   }, [])
 
+    const startScan = async () => {	
+		await central.scan()
+		console.log('Central Scanning...')
+    }
+
+  const connect = async () => {
+    if (peripheralId) {
+      throw new Error('An other peripheral is already connected')
+    } else {
+		if (readyToConnect) {
+		  setPeripheralId(readyToConnect)
+		  await central.connect(readyToConnect)
+		  setIsConnected(true)
+		  setReadyToConnect(undefined);
+		} else {
+			throw new Error('Was not ready to connect');
+		}
+    }
+  }
+
   return (
     <SafeAreaView style={styles.background}>
+	  <Button onPress={startScan} title="Scan" color="#CCF6C5" />
+	  {readyToConnect ? (
+		  <Button onPress={connect} title="Connect" color="#CCFCC5" />
+	  ) : (
+		<Text>Not Ready to connect</Text>
+	  )}
+	  {peripheralId ? (
+			<Text>Connected to {peripheralId}</Text>
+		) : (
+			<Text>Not yet connected</Text>
+		)}
       {scanList ? (
         <FlatList data={scanList} keyExtractor={() => uuid()} renderItem={({ item }) => renderItem(item)} />
       ) : (
