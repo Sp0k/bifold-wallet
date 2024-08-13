@@ -10,11 +10,11 @@ interface Messenger {
 }
 
 export const sendInvitation = <M extends Messenger>(messenger: M) => {
-	messenger.sendMessage(StandardMessage.INVITATION).catch((err) => console.log(`Error sending invitation: ${err}, pass to next`));
+	messenger.sendMessage(StandardMessage.INVITATION).catch((err) => console.log(err));
 }
 
 const sendAcceptInvitation = <M extends Messenger>(messenger: M) => {
-	messenger.sendMessage(StandardMessage.ACCEPT_INVITATION);
+	messenger.sendMessage(StandardMessage.ACCEPT_INVITATION).catch((err) => console.log(err));
 }
 
 const isStandardMessage = (message: string): boolean => message[0] === '<' && message[1] === 'S' && message[2] === 'T' && message[3] === 'D' && message[4] === '>'

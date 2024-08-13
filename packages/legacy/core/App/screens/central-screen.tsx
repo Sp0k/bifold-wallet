@@ -1,6 +1,6 @@
 import { Button, DeviceEventEmitter, View, Text } from 'react-native'
 import { Central, useCentral, useCentralShutdownOnUnmount, DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID, DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID, DEFAULT_DIDCOMM_SERVICE_UUID, } from '@animo-id/react-native-ble-didcomm'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { BifoldError } from '../types/error'
 import { EventTypes } from '../constants'
 import { useTranslation } from 'react-i18next'
@@ -30,7 +30,8 @@ const CentralScreen = () => {
   const { setAgent, agent } = useAgent()
   const navigation = useNavigation()
   const [connectionList, setConnectionList] = useState<Connection[]>([]);
-  const [currentConnectedId, setCurrentConnectedId] = useState<string | undefined>(undefined);
+  const currentConnectedId = useRef<string | undefined>(undefined);
+  const scheduleInvitation = useRef<boolean>(false);
 
   const registerInboundTransport = async (agent: Agent, central: Central) => {
     const bleInboundTransport = new BleInboundTransport(central)
@@ -137,8 +138,8 @@ const CentralScreen = () => {
         console.log(`Discovered: ${identifier}`)
 
         if (scanList.filter((scan) => scan.identifier === identifier).length === 0) {
-			central.connect(identifier);
-			sendInvitation(central);
+			await central.connect(identifier);
+			scheduleInvitation.current = true;
 			setScanList([...scanList, newScan(identifier, ScanStatus.REJECTED)]);
         }
       })
@@ -147,7 +148,7 @@ const CentralScreen = () => {
 
 		  if (isAcceptInvitation(message)) {
 			  console.log("Invitation is accepted");
-			  const currentIdentifier = currentConnectedId ?? (() => { throw new Error("expected current identifier") })();
+			  const currentIdentifier = currentConnectedId.current ?? (() => { throw new Error("expected current identifier") })();
 
 			  setScanList([...(scanList.filter(scan => scan.identifier !== currentIdentifier)), newScan(currentIdentifier, ScanStatus.ACCEPTED)]);
 		  }
@@ -156,7 +157,13 @@ const CentralScreen = () => {
 	  });
       central.registerOnConnectedListener(({ identifier }: { identifier: string }) => {
 		  setConnectionList([...connectionList, newConnection(identifier)]);
-		  setCurrentConnectedId(identifier);
+		  currentConnectedId.current = identifier;
+
+		  if (scheduleInvitation.current) {
+			  console.log("Invitation has been scheduled");
+			  sendInvitation(central);
+			  scheduleInvitation.current = false;
+		  }
       })
 	  central.registerOnDisconnectedListener(({ identifier }: { identifier: string }) => {
 		  setConnectionList(connectionList.filter(item => item.identifier !== identifier));
