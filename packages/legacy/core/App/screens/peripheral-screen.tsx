@@ -27,6 +27,7 @@ import { CommonActions } from '@react-navigation/core'
 import { Stacks } from '../types/navigators'
 import ConnectionList, { Connection, newConnection } from './components/ConnectionList'
 import { handlePeripheralStandardMessage } from './utils/StandardMessage'
+import QRRenderer from '../components/misc/QRRenderer'
 
 const PeripheralScreen = () => {
   const [store, dispatch] = useStore()
@@ -35,7 +36,24 @@ const PeripheralScreen = () => {
   const { getWalletCredentials } = useAuth()
   const { agent, setAgent } = useAgent()
   const navigation = useNavigation()
-  const [connectionList, setConnectionList] = useState<Connection[]>([]);
+  const [connectionList, setConnectionList] = useState<Connection[]>([])
+
+  const qrCodeValue = `{
+  "@type": "https://didcomm.org/out-of-band/%VER/invitation",
+  "@id": "<id used for context as pthid>",
+  "label": "Faber College",
+  "handshake_protocols": ["https://didcomm.org/didexchange/1.0"],
+  "services": [
+    {
+      "id": "#inline",
+      "type": "did-communication",
+      "recipientKeys": ["did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH"],
+      "routingKeys": [],
+      "serviceEndpoint": "https://example.com:5000"
+    },
+    "did:sov:LjgpST2rjsoxYegQDRm7EL"
+  ]
+  }`
 
   const onAdvertise = async () => {
     await peripheral.advertise()
@@ -93,7 +111,7 @@ const PeripheralScreen = () => {
             t('Error.Title1045'),
             t('Error.Message1045'),
             'Failed to initialize agent',
-            1045,
+            1045
           )
           DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
 
@@ -120,14 +138,14 @@ const PeripheralScreen = () => {
           CommonActions.reset({
             index: 0,
             routes: [{ name: Stacks.TabStack }],
-          }),
+          })
         )
       } catch (err: unknown) {
         const error = new BifoldError(
           t('Error.Title1045'),
           t('Error.Message1045'),
           (err as Error)?.message ?? err,
-          1045,
+          1045
         )
         DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
       }
@@ -135,22 +153,22 @@ const PeripheralScreen = () => {
 
     const startPeripheral = async () => {
       await peripheral.start()
-	  await peripheral.setService({
-		  serviceUUID: DEFAULT_DIDCOMM_SERVICE_UUID,
-		  messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
-		  indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID
-	  })
-	  console.log("[CENTRAL] Services was configured");
-	  peripheral.registerOnConnectedListener(({ identifier }: { identifier: string }) => {
-		  setConnectionList([...connectionList, newConnection(identifier)]);
-	  });
-	  peripheral.registerMessageListener(({ message }: { message: string }) => {
-		  console.log(`Peripheral got message: ${message}`);
-		  handlePeripheralStandardMessage(peripheral, message);
-	  });
-	  peripheral.registerOnDisconnectedListener(({ identifier }: { identifier: string }) => {
-		  setConnectionList(connectionList.filter(item => item.identifier !== identifier));
-	  }); 
+      await peripheral.setService({
+        serviceUUID: DEFAULT_DIDCOMM_SERVICE_UUID,
+        messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
+        indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
+      })
+      console.log('[CENTRAL] Services was configured')
+      peripheral.registerOnConnectedListener(({ identifier }: { identifier: string }) => {
+        setConnectionList([...connectionList, newConnection(identifier)])
+      })
+      peripheral.registerMessageListener(({ message }: { message: string }) => {
+        console.log(`Peripheral got message: ${message}`)
+        handlePeripheralStandardMessage(peripheral, message)
+      })
+      peripheral.registerOnDisconnectedListener(({ identifier }: { identifier: string }) => {
+        setConnectionList(connectionList.filter((item) => item.identifier !== identifier))
+      })
     }
 
     initAgent()
@@ -163,18 +181,19 @@ const PeripheralScreen = () => {
     }
   }, [])
 
-  usePeripheralShutdownOnUnmount();
+  usePeripheralShutdownOnUnmount()
 
   return (
-	<View>
-		<Button onPress={onAdvertise} title="Advertise" />
-		<BasicMessageProvider agent={agent}>
-		  <Text>TODO: Setup chat</Text>
-		</BasicMessageProvider>
+    <View>
+      <Button onPress={onAdvertise} title="Advertise" />
+      <BasicMessageProvider agent={agent}>
+        <Text>TODO: Setup chat</Text>
+      </BasicMessageProvider>
 
-		<Text>Connections List:</Text>
-		<ConnectionList list={connectionList} />
-	</View>
+      <Text>Connections List:</Text>
+      <ConnectionList list={connectionList} />
+      <QRRenderer value={qrCodeValue} />
+    </View>
   )
 }
 
