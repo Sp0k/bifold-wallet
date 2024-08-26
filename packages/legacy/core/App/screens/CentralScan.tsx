@@ -35,9 +35,9 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
             const messagingUUID: string = bluetoothSection['messagingUUID']
             const indicationUUID: string = bluetoothSection['indicationUUID']
 
-            console.log(`Service UUID: ${serviceUUID}`);
-            console.log(`Messaging UUID: ${messagingUUID}`);
-            console.log(`Indication UUID: ${indicationUUID}`);
+            console.log(`[CENTRAL] Service UUID: ${serviceUUID}`);
+            console.log(`[CENTRAL] Messaging UUID: ${messagingUUID}`);
+            console.log(`[CENTRAL] Indication UUID: ${indicationUUID}`);
 
             await central.start();
             await central.setService({

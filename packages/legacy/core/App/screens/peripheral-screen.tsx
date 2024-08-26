@@ -2,9 +2,6 @@ import {
   usePeripheral,
   usePeripheralShutdownOnUnmount,
   Peripheral,
-  DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
-  DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
-  DEFAULT_DIDCOMM_SERVICE_UUID,
 } from '@animo-id/react-native-ble-didcomm'
 import { useEffect, useState } from 'react'
 import { BifoldError } from '../types/error'
@@ -13,8 +10,6 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Modal,
-  TouchableWithoutFeedback,
 } from 'react-native'
 import { EventTypes } from '../constants'
 import { Agent } from '@credo-ts/core'
@@ -63,15 +58,10 @@ const PeripheralScreen = () => {
         serviceUUID: uuid.v4(),
         messagingUUID: uuid.v4(),
         indicationUUID: uuid.v4(),
-      },
+      } as { serviceUUID: string, messagingUUID: string, indicationUUID: string },
     };
 
     setQrCodeValue(JSON.stringify(qrCodeData))
-
-    const initAgentEmitError = (err: unknown) => {
-      const error = new BifoldError(t('Error.Title1045'), t('Error.Message1045'), (err as Error)?.message ?? err, 1045)
-      DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
-    }
 
     const configureAgent = (credentials: WalletSecret | undefined): Agent | undefined => {
       return InitAgent.configureAgent(store, credentials, undefined, [new BleOutboundTransport(peripheral)])
@@ -85,22 +75,26 @@ const PeripheralScreen = () => {
     }
 
     const startPeripheral = async () => {
+      console.log(`[PERIPHERAL] Service UUID: ${qrCodeData['bluetooth']['serviceUUID']}`)
+      console.log(`[PERIPHERAL] Messaging UUID: ${qrCodeData['bluetooth']['messagingUUID']}`)
+      console.log(`[PERIPHERAL] Indication UUID: ${qrCodeData['bluetooth']['indicationUUID']}`)
+
       await peripheral.start()
       await peripheral.setService({
-        serviceUUID: DEFAULT_DIDCOMM_SERVICE_UUID,
-        messagingUUID: DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID,
-        indicationUUID: DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID,
+        serviceUUID: qrCodeData['bluetooth']['serviceUUID'],
+        messagingUUID: qrCodeData['bluetooth']['messagingUUID'],
+        indicationUUID: qrCodeData['bluetooth']['indicationUUID'],
       })
-      console.log('[CENTRAL] Services was configured')
       peripheral.registerOnConnectedListener(({ identifier }: { identifier: string }) => {
-        setConnectionList([...connectionList, newConnection(identifier)])
+        console.log(`[PERIPHERAL] Connected: ${identifier}`);
+        /* ... */
       })
       peripheral.registerMessageListener(({ message }: { message: string }) => {
-        console.log(`Peripheral got message: ${message}`)
-        handlePeripheralStandardMessage(peripheral, message)
+        console.log(`[PERIPHERAL] Received message: ${message}`);
       })
       peripheral.registerOnDisconnectedListener(({ identifier }: { identifier: string }) => {
-        setConnectionList(connectionList.filter((item) => item.identifier !== identifier))
+        console.log(`[PERIPHERAL] Disconnected: ${identifier}`);
+        /* ... */
       })
     }
 
@@ -108,8 +102,8 @@ const PeripheralScreen = () => {
       await peripheral.advertise()
     }
 
-    initAgent()
     startPeripheral()
+    initAgent()
     advertise();
 
     // return () => {
