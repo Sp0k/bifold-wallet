@@ -2,7 +2,6 @@ import { View, StyleSheet, TouchableOpacity, Text } from 'react-native'
 import { useNavigation } from '@react-navigation/core'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { BleCommunicationPrototypeParams, Screens, Stacks } from '../types/navigators'
-import { screen } from '@testing-library/react-native'
 
 interface NavButtonProps {
   title: string
@@ -12,8 +11,8 @@ interface NavButtonProps {
 
 export const NavButton = ({ title, onPress, color }: NavButtonProps) => {
   return (
-    <TouchableOpacity style={[styles.button, { backgroundColor: `${color}` }]} onPress={onPress}>
-      <Text style={styles.btnText}>{title}</Text>
+    <TouchableOpacity style={[styles.button, { borderColor: `${color}` }]} onPress={onPress}>
+      <Text style={[styles.btnText, { color: `${color}` }]}>{title}</Text>
     </TouchableOpacity>
   )
 }
@@ -21,7 +20,8 @@ export const NavButton = ({ title, onPress, color }: NavButtonProps) => {
 const ChoiceScreen = () => {
   const navigation = useNavigation<StackNavigationProp<BleCommunicationPrototypeParams>>()
   const onPressCentralHandler = () => navigation.navigate(Stacks.CentralStack, { screen: Screens.CentralScreen })
-  const onPressPeripheralHandler = () => navigation.navigate(Stacks.PeripheralStack, { screen: Screens.PeripheralScreen })
+  const onPressPeripheralHandler = () =>
+    navigation.navigate(Stacks.PeripheralStack, { screen: Screens.PeripheralScreen })
 
   return (
     <View style={styles.background}>
@@ -45,11 +45,11 @@ const styles = StyleSheet.create({
     width: 338,
     textAlign: 'center',
     borderRadius: 15,
+    borderWidth: 5,
     justifyContent: 'center',
   },
   btnText: {
     fontSize: 40,
-    color: '#151818',
     textAlign: 'center',
   },
 })

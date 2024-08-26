@@ -188,22 +188,6 @@ const PeripheralScreen = () => {
   return (
     <View style={{ flex: 1 }}>
       <View style={{ alignItems: 'center', flex: 1 }}>
-        {/*   <TouchableOpacity */}
-        {/*     onPress={onAdvertise} */}
-        {/*     style={{ */}
-        {/*       width: 250, */}
-        {/*       height: 250, */}
-        {/*       borderWidth: 10, */}
-        {/*       borderRadius: 125, */}
-        {/*       borderColor: '#459DDE', */}
-        {/*       justifyContent: 'center', */}
-        {/*       alignItems: 'center', */}
-        {/*       marginTop: 40, */}
-        {/*     }} */}
-        {/*   > */}
-        {/*     <Text style={{ color: '#459DDE', fontSize: 25 }}>Advertise</Text> */}
-        {/*   </TouchableOpacity> */}
-
         <TouchableOpacity
           style={{
             width: 250,
@@ -228,12 +212,13 @@ const PeripheralScreen = () => {
           onRequestClose={() => {
             setModalVisible(!modalVisible)
           }}
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
         >
           <TouchableWithoutFeedback
             onPress={() => {
               setModalVisible(!modalVisible)
             }}
-            style={{ flex: 1 }}
+            style={{ justifyContent: 'center', alignItems: 'center' }}
           >
             <View
               style={{
@@ -243,22 +228,20 @@ const PeripheralScreen = () => {
                 flex: 1,
               }}
             >
-              <View style={{ flex: 1 }}>
-                <View
-                  style={{
-                    backgroundColor: '#fff',
-                    borderRadius: 20,
-                    borderColor: 'black',
-                    borderWidth: 10,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingHorizontal: 25,
-                    paddingVertical: 25,
-                    height: 350,
-                  }}
-                >
-                  <QRRenderer value={qrCodeValue} size={300} />
-                </View>
+              <View
+                style={{
+                  backgroundColor: '#fff',
+                  borderRadius: 20,
+                  borderColor: 'black',
+                  borderWidth: 10,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  paddingHorizontal: 25,
+                  paddingVertical: 25,
+                  height: 350,
+                }}
+              >
+                <QRRenderer value={qrCodeValue} size={300} />
               </View>
             </View>
           </TouchableWithoutFeedback>
