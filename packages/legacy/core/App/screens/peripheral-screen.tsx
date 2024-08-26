@@ -104,8 +104,13 @@ const PeripheralScreen = () => {
       })
     }
 
+    const advertise = async () => {
+      await peripheral.advertise()
+    }
+
     initAgent()
     startPeripheral()
+    advertise();
 
     // return () => {
     //   if (agent) {

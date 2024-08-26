@@ -56,6 +56,9 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
             central.registerOnDisconnectedListener(({ identifier }: { identifier: string }) => {
                 console.log(`[CENTRAL] Disconnected: ${identifier}`);
             })
+            central.registerOnDiscoveredListener(({ identifier }: { identifier: string }) => {
+                console.log(`[CENTRAL] Discovered: ${identifier}`);
+            })
 
             console.log("Starting central");
         }
@@ -71,8 +74,13 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
             InitAgent.run(credentials, newAgent, setAgent, t);
         }
 
+        const scan = async () => {
+            central.scan();
+        }
+
         startCentral();
         initAgent();
+        scan();
 
         return () => {
             agent?.shutdown();
