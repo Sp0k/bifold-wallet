@@ -40,6 +40,7 @@ const PeripheralScreen = () => {
   const navigation = useNavigation()
   const [connectionList, setConnectionList] = useState<Connection[]>([])
   const [modalVisible, setModalVisible] = useState<boolean>(false)
+  const [qrCodeValue, setQrCodeValue] = useState<string | undefined>(undefined)
 
   const registerOutboundTransport = (agent: Agent, peripheral: Peripheral) => {
     const bleOutboundTransport = new BleOutboundTransport(peripheral)
@@ -136,7 +137,7 @@ const PeripheralScreen = () => {
           <Text style={{ color: '#CCF6C5', fontSize: 25 }}>Display QR Code</Text>
         </TouchableOpacity>
         <QRCodeModal
-          qrCodeData={qrCodeValue}
+          qrCodeData={qrCodeValue ?? '{}'}
           visibility={modalVisible}
           onPress={() => setModalVisible(!modalVisible)}
         />
