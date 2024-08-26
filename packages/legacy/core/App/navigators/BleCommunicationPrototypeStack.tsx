@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ParamListBase, RouteConfig, StackNavigationState, useNavigation } from '@react-navigation/core'
 import { StackNavigationOptions, StackNavigationProp, createStackNavigator } from '@react-navigation/stack'
-import { StackNavigationEventMap } from '@react-navigation/stack/lib/typescript/src/types'
 import React from 'react'
 
 import { DispatchAction } from '../contexts/reducers/store'
@@ -35,7 +34,7 @@ const BleCommunicationPrototypeStack: React.FC = () => {
   return (
     <Stack.Navigator screenOptions={{ ...defaultStackOptions }}>
       <Stack.Screen name={Screens.ChoiceScreen} component={ChoiceScreen} options={{ headerShown: false }} />
-      <Stack.Screen name={Stacks.CentralStack} component={CentralStack} />
+      <Stack.Screen name={Stacks.CentralStack} component={CentralStack} options={{ headerShown: false }} />
       <Stack.Screen name={Stacks.PeripheralStack} component={PeripheralStack} />
     </Stack.Navigator>
   );

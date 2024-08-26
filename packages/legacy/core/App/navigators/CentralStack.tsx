@@ -7,7 +7,7 @@ import CentralScan from "../screens/CentralScan";
 const CentralStack: React.FC = () => {
     const Stack = createStackNavigator();
     const options = {
-        headerShown: false,
+        headerShown: true,
     };
 
     return (
