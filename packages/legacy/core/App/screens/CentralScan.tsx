@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { CentralStackParams, Stacks } from "../types/navigators";
 import { useAgent } from "@credo-ts/react-hooks";
 import { Central, useCentral } from "@animo-id/react-native-ble-didcomm";
-import { Agent } from "@credo-ts/core";
+import { Agent, ConnectionsModule, KeyDerivationMethod, WalletConfig } from "@credo-ts/core";
 import { BleInboundTransport } from "@credo-ts/transport-ble";
 import { useStore } from "../contexts/store";
 import { WalletSecret } from "../types/security";
@@ -17,6 +17,8 @@ import { didMigrateToAskar, migrateToAskar } from "../utils/migration";
 import { DispatchAction } from "../contexts/reducers/store";
 import { createLinkSecretIfRequired } from "../utils/agent";
 import { CommonActions } from "@react-navigation/core";
+import { ariesAskar } from '@hyperledger/aries-askar-react-native'
+import { AskarModule } from "@credo-ts/askar";
 
 export type CentralScanProps = StackScreenProps<CentralStackParams>;
 
@@ -78,25 +80,34 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
             agent.registerInboundTransport(bleInboundTransport);
         }
 
+        const walletConfig: WalletConfig = {
+            id: 'foo',
+            key: 'testkey000000000000000000000',
+            keyDerivationMethod: KeyDerivationMethod.Argon2IMod
+        }
+
         const configureAgent = (credentials: WalletSecret): Agent | undefined => {
             try {
                 const agent = new Agent({
                     config: {
                         label: store.preferences.walletName || 'Aries Bifold',
-                        walletConfig: {
-                            id: credentials.id,
-                            key: credentials.key ?? '',
-                        },
+                        walletConfig: walletConfig, 
                         autoUpdateStorageOnStartup: true,
                     },
                     dependencies: agentDependencies,
-                    modules: {},
+                    modules: {
+                        connections: new ConnectionsModule({ autoAcceptConnections: true }),
+                        askar: new AskarModule({
+                            ariesAskar,
+                        }),
+                    },
                 })
 
                 registerInboundTransport(agent, central);
   
                 return agent
             } catch (err) {
+                console.log(err);
                 initAgentEmitError(err)
             }
         }
@@ -105,9 +116,13 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
             try {
                 const credentials = await getWalletCredentials();
                 
-                if (!credentials?.id || !credentials.key) {
-                    // Cannot find wallet id/secret
-                    return
+                // if (!credentials?.id || !credentials.key) {
+                //     // Cannot find wallet id/secret
+                //     return
+                // }
+                
+                if (!credentials) {
+                    return;
                 }
                 
                 const newAgent = configureAgent(credentials)
@@ -122,33 +137,14 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
                     DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
                     
                     return
-                }
-                
-                if (!didMigrateToAskar(store.migration)) {
-                    newAgent.config.logger.debug('Agent not updated to Aries Askar, updating...')
-                    
-                    await migrateToAskar(credentials.id, credentials.key, newAgent)
-                    
-                    newAgent.config.logger.debug('Successfully finished updating agent to Aries Askar')
-                    
-                    dispatch({
-                        type: DispatchAction.DID_MIGRATE_TO_ASKAR,
-                    })
-                }
+                } 
                 
                 await newAgent.initialize()
-                await createLinkSecretIfRequired(newAgent)
+                // await createLinkSecretIfRequired(newAgent)
 
                 console.log("Initialized agent");
                 
-                setAgent(newAgent)
-                
-                navigation.dispatch(
-                    CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: Stacks.TabStack }],
-                    })
-                )
+                setAgent(newAgent) 
             } catch (err) {
                 const error = new BifoldError(
                     t('Error.Title1045'),
