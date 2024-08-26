@@ -37,7 +37,7 @@ const BleCommunicationPrototypeStack: React.FC = () => {
       <Stack.Screen name={Stacks.CentralStack} component={CentralStack} options={{ headerShown: false }} />
       <Stack.Screen name={Stacks.PeripheralStack} component={PeripheralStack} />
     </Stack.Navigator>
-  );
+  )
 }
 
-export default BleCommunicationPrototypeStack 
+export default BleCommunicationPrototypeStack

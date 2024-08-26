@@ -113,7 +113,7 @@ const PeripheralScreen = () => {
             t('Error.Title1045'),
             t('Error.Message1045'),
             'Failed to initialize agent',
-            1045
+            1045,
           )
           DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
 
@@ -140,14 +140,14 @@ const PeripheralScreen = () => {
           CommonActions.reset({
             index: 0,
             routes: [{ name: Stacks.TabStack }],
-          })
+          }),
         )
       } catch (err: unknown) {
         const error = new BifoldError(
           t('Error.Title1045'),
           t('Error.Message1045'),
           (err as Error)?.message ?? err,
-          1045
+          1045,
         )
         DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
       }

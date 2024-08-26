@@ -19,7 +19,7 @@ const ScanBase: React.FC<ScanBaseProps> = ({ children }) => {
   const permissionFlow = async (
     method: PermissionContract,
     permission: Permission,
-    rationale?: Rationale
+    rationale?: Rationale,
   ): Promise<boolean> => {
     try {
       const permissionResult = await method(permission, rationale)
@@ -71,8 +71,7 @@ const ScanBase: React.FC<ScanBaseProps> = ({ children }) => {
     return <CameraDisclosureModal requestCameraUse={requestCameraUse} />
   }
 
-  return children;
+  return children
 }
 
 export default ScanBase
-
