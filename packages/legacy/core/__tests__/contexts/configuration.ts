@@ -21,6 +21,7 @@ const configurationContext: ConfigurationContext = {
   settings: [],
   developer: () => null,
   scan: () => null,
+  bleScan: () => null,
   PINSecurity: {
     rules: {
       only_numbers: true,

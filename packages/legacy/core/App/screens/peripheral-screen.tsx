@@ -38,27 +38,14 @@ const PeripheralScreen = () => {
   const navigation = useNavigation()
   const [connectionList, setConnectionList] = useState<Connection[]>([])
 
-  const qrCodeValue = `{
-  "@type": "https://didcomm.org/out-of-band/%VER/invitation",
-  "@id": "<id used for context as pthid>",
-  "label": "Faber College",
-  "handshake_protocols": ["https://didcomm.org/didexchange/1.0"],
-  "services": [
-    {
-      "id": "#inline",
-      "type": "did-communication",
-      "recipientKeys": ["did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH"],
-      "routingKeys": [],
-      "serviceEndpoint": "https://example.com:5000",
-	  "bluetooth": {
-	    "serviceUUID": "c726dac1-3b2e-4bba-ad12-55bbef2cca4a",
-	    "messagingUUID": "24167a46-559f-4719-8c68-7f7112dd68c0",
-	    "indicationUUID": "b755f21c-9f62-4d76-9eb5-6bf47fd05a8d"
-	  }
-    },
-    "did:sov:LjgpST2rjsoxYegQDRm7EL"
-  ]
-  }`
+  const qrCodeData = {
+      "bluetooth": {
+        "serviceUUID": "c726dac1-3b2e-4bba-ad12-55bbef2cca4a",
+        "messagingUUID": "24167a46-559f-4719-8c68-7f7112dd68c0",
+        "indicationUUID": "b755f21c-9f62-4d76-9eb5-6bf47fd05a8d"
+      }
+  }
+  const qrCodeValue = JSON.stringify(qrCodeData);
 
   const onAdvertise = async () => {
     await peripheral.advertise()
@@ -189,7 +176,7 @@ const PeripheralScreen = () => {
   usePeripheralShutdownOnUnmount()
 
   return (
-    <View>
+    <View style={{ backgroundColor: "#ffffff" }}>
       <Button onPress={onAdvertise} title="Advertise" />
       <BasicMessageProvider agent={agent}>
         <Text>TODO: Setup chat</Text>
@@ -197,7 +184,7 @@ const PeripheralScreen = () => {
 
       <Text>Connections List:</Text>
       <ConnectionList list={connectionList} />
-      <QRRenderer value={qrCodeValue} size={380} />
+      <QRRenderer value={qrCodeValue} size={200} />
     </View>
   )
 }

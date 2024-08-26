@@ -17,6 +17,7 @@ import Splash from './screens/Splash'
 import Terms from './screens/Terms'
 import UseBiometry from './screens/UseBiometry'
 import Verification from './screens/Verification'
+import BleScan from './screens/BleScan'
 
 export const defaultConfiguration: ConfigurationContext = {
   pages: OnboardingPages,
@@ -30,6 +31,7 @@ export const defaultConfiguration: ConfigurationContext = {
   credentialListOptions: () => null,
   credentialEmptyList: EmptyList,
   scan: Scan,
+  bleScan: BleScan,
   record: Record,
   PINSecurity: { rules: PINRules, displayHelper: false },
   settings: [],

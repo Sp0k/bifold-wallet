@@ -1,10 +1,10 @@
 import { Button, DeviceEventEmitter, View, Text } from 'react-native'
 import { Central, useCentral, useCentralShutdownOnUnmount, DEFAULT_DIDCOMM_MESSAGE_CHARACTERISTIC_UUID, DEFAULT_DIDCOMM_INDICATE_CHARACTERISTIC_UUID, DEFAULT_DIDCOMM_SERVICE_UUID, } from '@animo-id/react-native-ble-didcomm'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { BifoldError } from '../types/error'
 import { EventTypes } from '../constants'
 import { useTranslation } from 'react-i18next'
-import { Agent } from '@credo-ts/core'
+import { Agent, ConsoleLogger } from '@credo-ts/core'
 import { useStore } from '../contexts/store'
 import { WalletSecret } from '../types/security'
 import { agentDependencies } from '@credo-ts/react-native'
@@ -20,6 +20,7 @@ import { Stacks } from '../types/navigators'
 import ConnectionList, { Connection, newConnection } from './components/ConnectionList'
 import ScanList, { ScanStatus, Scan, newScan } from './components/ScanList'
 import { sendInvitation, handleCentralStandardMessage, isAcceptInvitation } from './utils/StandardMessage'
+import { Screens } from '../types/navigators'
 
 const CentralScreen = () => {
   const [scanList, setScanList] = useState<Scan[]>([]);
@@ -32,11 +33,20 @@ const CentralScreen = () => {
   const [connectionList, setConnectionList] = useState<Connection[]>([]);
   const currentConnectedId = useRef<string | undefined>(undefined);
   const scheduleInvitation = useRef<boolean>(false);
+  // const qrCodeData = useRef<string | undefined>(undefined);
 
   const registerInboundTransport = async (agent: Agent, central: Central) => {
     const bleInboundTransport = new BleInboundTransport(central)
 
     agent.registerInboundTransport(bleInboundTransport)
+  }
+
+  const handleCodeScan = useCallback(async (value: string): Promise<void> => {
+    console.log("Hello, World");
+  }, []);
+
+  const onPressScanQrCodeHandler = () => {
+    navigation.getParent()?.navigate(Screens.BleScanScreen);
   }
 
   useEffect(() => {
@@ -189,11 +199,12 @@ const CentralScreen = () => {
 
   return (
 	  <View>
-		  	<Button onPress={onScan} title="Scan" />
+		  	<Button onPress={onScan} title="Scan with Bluetooth" />
 		    <Text>Scan list:</Text>
 		    <ScanList list={scanList} />
 			<Text>Connections List:</Text>
 			<ConnectionList list={connectionList} />
+      <Button onPress={onPressScanQrCodeHandler} title="Scan QR code" />
 	  </View>
   );
 }

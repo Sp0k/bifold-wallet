@@ -9,7 +9,7 @@ import { Locales } from '../localization'
 import { VerificationID } from '../verification'
 import OnboardingPages from '../screens/OnboardingPages'
 import { GetCredentialHelpEntry } from '../types/get-credential-help'
-import { ConnectStackParams } from '../types/navigators'
+import { BleCommunicationPrototypeParams, ConnectStackParams } from '../types/navigators'
 import { PINSecurityParams } from '../types/security'
 import { SettingSection } from '../types/settings'
 
@@ -44,6 +44,7 @@ export interface ConfigurationContext {
   developer: React.FC
   proofTemplateBaseUrl?: string
   scan: React.FC<StackScreenProps<ConnectStackParams>>
+  bleScan: React.FC<StackScreenProps<BleCommunicationPrototypeParams>>
   record: React.FC<RecordProps>
   PINSecurity: PINSecurityParams
   settings: SettingSection[]
