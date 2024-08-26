@@ -1,5 +1,5 @@
 import { StackScreenProps } from "@react-navigation/stack";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CentralStackParams } from "../types/navigators";
 import { useAgent } from "@credo-ts/react-hooks";
 import { useCentral } from "@animo-id/react-native-ble-didcomm";
@@ -20,6 +20,7 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
     const { getWalletCredentials } = useAuth()
     const { t } = useTranslation()
     const qrCodeData: any | undefined = route?.params && route.params['qrCodeData'];
+    const [isConnected, setIsConnected] = useState<boolean>(false);
 
     useEffect(() => {
         console.log(qrCodeData);  
@@ -50,19 +51,37 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
                 /* Parse the JSON or fetch the URL. */
             });
             central.registerOnConnectedListener(({ identifier }: { identifier: string }) => {
+                setIsConnected(true);
                 console.log(`[CENTRAL] Connected: ${identifier}`);
                 /* ... */
             });
             central.registerOnDisconnectedListener(({ identifier }: { identifier: string }) => {
+                setIsConnected(false);
                 console.log(`[CENTRAL] Disconnected: ${identifier}`);
             })
             central.registerOnDiscoveredListener(({ identifier }: { identifier: string }) => {
+                central.connect(identifier).catch(err => console.log(err));
                 console.log(`[CENTRAL] Discovered: ${identifier}`);
             })
 
-            console.log("Starting central");
+            console.log("[CENTRAL] Starting");
+
+            central.scan();
+
+            console.log("[CENTRAL] Scanning")
         }
 
+        startCentral();
+
+        return () => {
+            if (agent?.isInitialized) {
+                agent?.shutdown();
+                console.log("Shutting down central");
+            }
+        }
+    }, []);
+
+    useEffect(() => {
         const configureAgent = (credentials: WalletSecret | undefined): Agent | undefined => {
             return InitAgent.configureAgent(store, credentials, [new BleInboundTransport(central)]);
         }
@@ -74,19 +93,10 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
             InitAgent.run(credentials, newAgent, setAgent, t);
         }
 
-        const scan = async () => {
-            central.scan();
+        if (isConnected) {
+            initAgent();
         }
-
-        startCentral();
-        initAgent();
-        scan();
-
-        return () => {
-            agent?.shutdown();
-            console.log("Shutting down central");
-        }
-    }, []);
+    }, [isConnected]);
 
     return (
         <></>

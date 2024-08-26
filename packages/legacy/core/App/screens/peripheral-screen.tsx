@@ -1,17 +1,13 @@
 import {
   usePeripheral,
   usePeripheralShutdownOnUnmount,
-  Peripheral,
 } from '@animo-id/react-native-ble-didcomm'
 import { useEffect, useState } from 'react'
-import { BifoldError } from '../types/error'
 import {
-  DeviceEventEmitter,
   Text,
   View,
   TouchableOpacity,
 } from 'react-native'
-import { EventTypes } from '../constants'
 import { Agent } from '@credo-ts/core'
 import { WalletSecret } from '../types/security'
 import { useStore } from '../contexts/store'
@@ -20,8 +16,6 @@ import { BleOutboundTransport } from '@credo-ts/transport-ble'
 import { useAuth } from '../contexts/auth'
 import { useAgent } from '@credo-ts/react-hooks'
 import { useNavigation } from '@react-navigation/core'
-import ConnectionList, { Connection, newConnection } from './components/ConnectionList'
-import { handlePeripheralStandardMessage } from './utils/StandardMessage'
 import QRCodeModal from '../components/modals/QRCodeModal'
 import * as InitAgent from '../utils/init_agent'
 import uuid from 'react-native-uuid';
@@ -33,15 +27,9 @@ const PeripheralScreen = () => {
   const { getWalletCredentials } = useAuth()
   const { agent, setAgent } = useAgent()
   const navigation = useNavigation()
-  const [connectionList, setConnectionList] = useState<Connection[]>([])
   const [modalVisible, setModalVisible] = useState<boolean>(false)
   const [qrCodeValue, setQrCodeValue] = useState<string | undefined>(undefined)
-
-  const registerOutboundTransport = (agent: Agent, peripheral: Peripheral) => {
-    const bleOutboundTransport = new BleOutboundTransport(peripheral)
-
-    agent.registerOutboundTransport(bleOutboundTransport)
-  }
+  const [isConnected, setIsConnected] = useState<boolean>(false)
 
   useEffect(() => {
     if (modalVisible === false) {
@@ -63,17 +51,6 @@ const PeripheralScreen = () => {
 
     setQrCodeValue(JSON.stringify(qrCodeData))
 
-    const configureAgent = (credentials: WalletSecret | undefined): Agent | undefined => {
-      return InitAgent.configureAgent(store, credentials, undefined, [new BleOutboundTransport(peripheral)])
-    }
-
-    const initAgent = async (): Promise<void> => {
-      const credentials = await getWalletCredentials();
-      const newAgent = configureAgent(credentials);
-
-      InitAgent.run(credentials, newAgent, setAgent, t);
-    }
-
     const startPeripheral = async () => {
       console.log(`[PERIPHERAL] Service UUID: ${qrCodeData['bluetooth']['serviceUUID']}`)
       console.log(`[PERIPHERAL] Messaging UUID: ${qrCodeData['bluetooth']['messagingUUID']}`)
@@ -86,6 +63,7 @@ const PeripheralScreen = () => {
         indicationUUID: qrCodeData['bluetooth']['indicationUUID'],
       })
       peripheral.registerOnConnectedListener(({ identifier }: { identifier: string }) => {
+        setIsConnected(true);
         console.log(`[PERIPHERAL] Connected: ${identifier}`);
         /* ... */
       })
@@ -93,25 +71,37 @@ const PeripheralScreen = () => {
         console.log(`[PERIPHERAL] Received message: ${message}`);
       })
       peripheral.registerOnDisconnectedListener(({ identifier }: { identifier: string }) => {
+        setIsConnected(false);
         console.log(`[PERIPHERAL] Disconnected: ${identifier}`);
         /* ... */
       })
-    }
 
-    const advertise = async () => {
+      console.log("[PERIPHERAL] Starting")
+
       await peripheral.advertise()
+
+      console.log("[PERIPHERAL] Advertising")
     }
 
     startPeripheral()
-    initAgent()
-    advertise();
-
-    // return () => {
-    //   if (agent) {
-    //     agent.shutdown()
-    //   }
-    // }
   }, [modalVisible])
+
+  useEffect(() => {
+    const configureAgent = (credentials: WalletSecret | undefined): Agent | undefined => {
+      return InitAgent.configureAgent(store, credentials, undefined, [new BleOutboundTransport(peripheral)])
+    }
+
+    const initAgent = async (): Promise<void> => {
+      const credentials = await getWalletCredentials();
+      const newAgent = configureAgent(credentials);
+
+      InitAgent.run(credentials, newAgent, setAgent, t);
+    }
+
+    if (isConnected) {
+      initAgent()
+    }
+  }, [isConnected])
 
   usePeripheralShutdownOnUnmount()
 
