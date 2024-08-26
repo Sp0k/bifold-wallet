@@ -1,4 +1,3 @@
-import { Button, View } from 'react-native'
 import { useNavigation } from '@react-navigation/core'
 import { Screens } from '../types/navigators'
 
@@ -11,6 +10,11 @@ const CentralScreen = () => {
 
   return (
 	  <View>
+		  	<Button onPress={onScan} title="Scan with Bluetooth" />
+		    <Text>Scan list:</Text>
+		    <ScanList list={scanList} />
+			<Text>Connections List:</Text>
+			<ConnectionList list={connectionList} />
       <Button onPress={onPressScanQrCodeHandler} title="Scan QR code" />
 	  </View>
   );

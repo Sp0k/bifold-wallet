@@ -8,7 +8,16 @@ import {
 } from '@animo-id/react-native-ble-didcomm'
 import { useEffect, useState, useRef } from 'react'
 import { BifoldError } from '../types/error'
-import { DeviceEventEmitter, Text, Button, View, FlatList } from 'react-native'
+import {
+  DeviceEventEmitter,
+  Text,
+  Button,
+  View,
+  FlatList,
+  TouchableOpacity,
+  Modal,
+  TouchableWithoutFeedback,
+} from 'react-native'
 import { EventTypes } from '../constants'
 import { Agent } from '@credo-ts/core'
 import { WalletSecret } from '../types/security'
@@ -37,15 +46,16 @@ const PeripheralScreen = () => {
   const { agent, setAgent } = useAgent()
   const navigation = useNavigation()
   const [connectionList, setConnectionList] = useState<Connection[]>([])
+  const [modalVisible, setModalVisible] = useState<boolean>(false)
 
   const qrCodeData = {
-      "bluetooth": {
-        "serviceUUID": "c726dac1-3b2e-4bba-ad12-55bbef2cca4a",
-        "messagingUUID": "24167a46-559f-4719-8c68-7f7112dd68c0",
-        "indicationUUID": "b755f21c-9f62-4d76-9eb5-6bf47fd05a8d"
-      }
+    bluetooth: {
+      serviceUUID: 'c726dac1-3b2e-4bba-ad12-55bbef2cca4a',
+      messagingUUID: '24167a46-559f-4719-8c68-7f7112dd68c0',
+      indicationUUID: 'b755f21c-9f62-4d76-9eb5-6bf47fd05a8d',
+    },
   }
-  const qrCodeValue = JSON.stringify(qrCodeData);
+  const qrCodeValue = JSON.stringify(qrCodeData)
 
   const onAdvertise = async () => {
     await peripheral.advertise()
@@ -176,15 +186,84 @@ const PeripheralScreen = () => {
   usePeripheralShutdownOnUnmount()
 
   return (
-    <View style={{ backgroundColor: "#ffffff" }}>
-      <Button onPress={onAdvertise} title="Advertise" />
-      <BasicMessageProvider agent={agent}>
-        <Text>TODO: Setup chat</Text>
-      </BasicMessageProvider>
+    <View style={{ flex: 1 }}>
+      <View style={{ alignItems: 'center', flex: 1 }}>
+        {/*   <TouchableOpacity */}
+        {/*     onPress={onAdvertise} */}
+        {/*     style={{ */}
+        {/*       width: 250, */}
+        {/*       height: 250, */}
+        {/*       borderWidth: 10, */}
+        {/*       borderRadius: 125, */}
+        {/*       borderColor: '#459DDE', */}
+        {/*       justifyContent: 'center', */}
+        {/*       alignItems: 'center', */}
+        {/*       marginTop: 40, */}
+        {/*     }} */}
+        {/*   > */}
+        {/*     <Text style={{ color: '#459DDE', fontSize: 25 }}>Advertise</Text> */}
+        {/*   </TouchableOpacity> */}
 
-      <Text>Connections List:</Text>
-      <ConnectionList list={connectionList} />
-      <QRRenderer value={qrCodeValue} size={200} />
+        <TouchableOpacity
+          style={{
+            width: 250,
+            height: 250,
+            borderWidth: 10,
+            borderRadius: 125,
+            borderColor: '#CCF6C5',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: 100,
+          }}
+          onPress={() => {
+            setModalVisible(!modalVisible)
+          }}
+        >
+          <Text style={{ color: '#CCF6C5', fontSize: 25 }}>Display QR Code</Text>
+        </TouchableOpacity>
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible)
+          }}
+        >
+          <TouchableWithoutFeedback
+            onPress={() => {
+              setModalVisible(!modalVisible)
+            }}
+            style={{ flex: 1 }}
+          >
+            <View
+              style={{
+                backgroundColor: '#151818',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flex: 1,
+              }}
+            >
+              <View style={{ flex: 1 }}>
+                <View
+                  style={{
+                    backgroundColor: '#fff',
+                    borderRadius: 20,
+                    borderColor: 'black',
+                    borderWidth: 10,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingHorizontal: 25,
+                    paddingVertical: 25,
+                    height: 350,
+                  }}
+                >
+                  <QRRenderer value={qrCodeValue} size={300} />
+                </View>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+      </View>
     </View>
   )
 }
