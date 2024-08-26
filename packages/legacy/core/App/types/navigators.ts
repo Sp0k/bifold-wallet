@@ -1,6 +1,7 @@
 import { CredentialExchangeRecord } from '@credo-ts/core'
 import { NavigatorScreenParams } from '@react-navigation/core'
 import { StackNavigationOptions } from '@react-navigation/stack'
+import { CentralScanProps } from 'screens/CentralScan'
 
 export enum Screens {
   AttemptLockout = 'Temporarily Locked',
@@ -45,6 +46,7 @@ export enum Screens {
   CentralScreen = 'Central',
   PeripheralScreen = 'Peripheral',
   BleScanScreen = 'BleScan',
+  CentralScanScreen = 'CentralScan',
 }
 
 export enum Stacks {
@@ -184,6 +186,7 @@ export type BleCommunicationPrototypeParams = {
 export type CentralStackParams = {
   [Screens.CentralScreen]: undefined,
   [Screens.BleScanScreen]: undefined,
+  [Screens.CentralScanScreen]: undefined, 
 }
 
 export type PeripheralStackParams = {
