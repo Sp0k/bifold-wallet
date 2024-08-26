@@ -36,7 +36,7 @@ import { CommonActions } from '@react-navigation/core'
 import { Stacks } from '../types/navigators'
 import ConnectionList, { Connection, newConnection } from './components/ConnectionList'
 import { handlePeripheralStandardMessage } from './utils/StandardMessage'
-import QRRenderer from '../components/misc/QRRenderer'
+import QRCodeModal from '../components/modals/QRCodeModal'
 
 const PeripheralScreen = () => {
   const [store, dispatch] = useStore()
@@ -56,11 +56,6 @@ const PeripheralScreen = () => {
     },
   }
   const qrCodeValue = JSON.stringify(qrCodeData)
-
-  const onAdvertise = async () => {
-    await peripheral.advertise()
-    console.log('Peripheral advertised')
-  }
 
   const registerOutboundTransport = (agent: Agent, peripheral: Peripheral) => {
     const bleOutboundTransport = new BleOutboundTransport(peripheral)
@@ -113,7 +108,7 @@ const PeripheralScreen = () => {
             t('Error.Title1045'),
             t('Error.Message1045'),
             'Failed to initialize agent',
-            1045,
+            1045
           )
           DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
 
@@ -140,14 +135,14 @@ const PeripheralScreen = () => {
           CommonActions.reset({
             index: 0,
             routes: [{ name: Stacks.TabStack }],
-          }),
+          })
         )
       } catch (err: unknown) {
         const error = new BifoldError(
           t('Error.Title1045'),
           t('Error.Message1045'),
           (err as Error)?.message ?? err,
-          1045,
+          1045
         )
         DeviceEventEmitter.emit(EventTypes.ERROR_ADDED, error)
       }
@@ -205,47 +200,11 @@ const PeripheralScreen = () => {
         >
           <Text style={{ color: '#CCF6C5', fontSize: 25 }}>Display QR Code</Text>
         </TouchableOpacity>
-        <Modal
-          animationType="slide"
-          transparent={false}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(!modalVisible)
-          }}
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <TouchableWithoutFeedback
-            onPress={() => {
-              setModalVisible(!modalVisible)
-            }}
-            style={{ justifyContent: 'center', alignItems: 'center' }}
-          >
-            <View
-              style={{
-                backgroundColor: '#151818',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flex: 1,
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: '#fff',
-                  borderRadius: 20,
-                  borderColor: 'black',
-                  borderWidth: 10,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingHorizontal: 25,
-                  paddingVertical: 25,
-                  height: 350,
-                }}
-              >
-                <QRRenderer value={qrCodeValue} size={300} />
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
+        <QRCodeModal
+          qrCodeData={qrCodeValue}
+          visibility={modalVisible}
+          onPress={() => setModalVisible(!modalVisible)}
+        />
       </View>
     </View>
   )
