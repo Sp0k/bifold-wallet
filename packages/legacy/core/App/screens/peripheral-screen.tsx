@@ -1,13 +1,6 @@
-import {
-  usePeripheral,
-  usePeripheralShutdownOnUnmount,
-} from '@animo-id/react-native-ble-didcomm'
+import { usePeripheral, usePeripheralShutdownOnUnmount } from '@animo-id/react-native-ble-didcomm'
 import { useEffect, useState } from 'react'
-import {
-  Text,
-  View,
-  TouchableOpacity,
-} from 'react-native'
+import { Text, View, TouchableOpacity } from 'react-native'
 import { Agent } from '@credo-ts/core'
 import { WalletSecret } from '../types/security'
 import { useStore } from '../contexts/store'
@@ -18,7 +11,7 @@ import { useAgent } from '@credo-ts/react-hooks'
 import { useNavigation } from '@react-navigation/core'
 import QRCodeModal from '../components/modals/QRCodeModal'
 import * as InitAgent from '../utils/init_agent'
-import uuid from 'react-native-uuid';
+import uuid from 'react-native-uuid'
 import { Screens, Stacks } from '../types/navigators'
 
 const PeripheralScreen = () => {
@@ -35,20 +28,20 @@ const PeripheralScreen = () => {
   useEffect(() => {
     if (modalVisible === false) {
       if (agent && agent.isInitialized) {
-        console.log("Shutdown old agent")
-        agent.shutdown();
+        console.log('Shutdown old agent')
+        agent.shutdown()
       }
 
-      return;
-    } 
+      return
+    }
 
     const qrCodeData = {
       bluetooth: {
         serviceUUID: uuid.v4(),
         messagingUUID: uuid.v4(),
         indicationUUID: uuid.v4(),
-      } as { serviceUUID: string, messagingUUID: string, indicationUUID: string },
-    };
+      } as { serviceUUID: string; messagingUUID: string; indicationUUID: string },
+    }
 
     setQrCodeValue(JSON.stringify(qrCodeData))
 
@@ -64,25 +57,25 @@ const PeripheralScreen = () => {
         indicationUUID: qrCodeData['bluetooth']['indicationUUID'],
       })
       peripheral.registerOnConnectedListener(({ identifier }: { identifier: string }) => {
-        setIsConnected(true);
-        console.log(`[PERIPHERAL] Connected: ${identifier}`);
+        setIsConnected(true)
+        console.log(`[PERIPHERAL] Connected: ${identifier}`)
         navigation.getParent()?.navigate(Stacks.PeripheralStack, { screen: Screens.PeripheralConnectionStatus })
         /* ... */
       })
       peripheral.registerMessageListener(({ message }: { message: string }) => {
-        console.log(`[PERIPHERAL] Received message: ${message}`);
+        console.log(`[PERIPHERAL] Received message: ${message}`)
       })
       peripheral.registerOnDisconnectedListener(({ identifier }: { identifier: string }) => {
-        setIsConnected(false);
-        console.log(`[PERIPHERAL] Disconnected: ${identifier}`);
+        setIsConnected(false)
+        console.log(`[PERIPHERAL] Disconnected: ${identifier}`)
         /* ... */
       })
 
-      console.log("[PERIPHERAL] Starting")
+      console.log('[PERIPHERAL] Starting')
 
       await peripheral.advertise()
 
-      console.log("[PERIPHERAL] Advertising")
+      console.log('[PERIPHERAL] Advertising')
     }
 
     startPeripheral()
@@ -94,10 +87,10 @@ const PeripheralScreen = () => {
     }
 
     const initAgent = async (): Promise<void> => {
-      const credentials = await getWalletCredentials();
-      const newAgent = configureAgent(credentials);
+      const credentials = await getWalletCredentials()
+      const newAgent = configureAgent(credentials)
 
-      InitAgent.run(credentials, newAgent, setAgent, t);
+      InitAgent.run(credentials, newAgent, setAgent, t)
     }
 
     if (isConnected) {
@@ -130,6 +123,7 @@ const PeripheralScreen = () => {
         <QRCodeModal
           qrCodeData={qrCodeValue ?? '{}'}
           visibility={modalVisible}
+          isConnected={isConnected}
           onPress={() => setModalVisible(!modalVisible)}
         />
       </View>
