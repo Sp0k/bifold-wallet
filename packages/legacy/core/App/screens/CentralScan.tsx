@@ -13,6 +13,7 @@ import * as InitAgent from '../utils/init_agent'
 import { View, Text, ActivityIndicator } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { Button } from 'react-native'
+import ConnectionIndicator from '../components/misc/ConnectionIndicator'
 
 export type CentralScanProps = StackScreenProps<CentralStackParams>
 
@@ -103,17 +104,7 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
 
   return (
     <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 200 }}>
-      {!isConnected ? (
-        <ActivityIndicator size={200} color="#F0ACAC" />
-      ) : (
-        <Icon name="check-circle-outline" size={200} style={{ color: '#F0ACAC' }} />
-      )}
-      {/* <Button */}
-      {/*   title="Test" */}
-      {/*   onPress={() => { */}
-      {/*     setIsConnected(!isConnected) */}
-      {/*   }} */}
-      {/* /> */}
+      <ConnectionIndicator connectionStatus={isConnected} color="#F0ACAC" />
     </View>
   )
 }

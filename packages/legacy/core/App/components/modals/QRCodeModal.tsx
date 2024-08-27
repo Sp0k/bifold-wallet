@@ -3,6 +3,8 @@ import { Modal, TouchableWithoutFeedback, View, ActivityIndicator } from 'react-
 import QRRenderer from '../misc/QRRenderer'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 
+import ConnectionIndicator from '../misc/ConnectionIndicator'
+
 export interface QRCodeModalProps {
   qrCodeData: string
   visibility: boolean
@@ -44,11 +46,7 @@ const QRCodeModal = ({ qrCodeData, visibility, isConnected, onPress }: QRCodeMod
           >
             <QRRenderer value={qrCodeData} size={300} />
           </View>
-          {!isConnected ? (
-            <ActivityIndicator size={200} color="#CCF6C5" />
-          ) : (
-            <Icon name="check-circle-outline" size={200} style={{ color: '#CCF6C5' }} />
-          )}
+          <ConnectionIndicator connectionStatus={isConnected} color="#CCF6C5" />
         </View>
       </TouchableWithoutFeedback>
     </Modal>

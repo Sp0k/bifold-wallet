@@ -26,7 +26,6 @@ const CentralScreen = () => {
       >
         <Text style={{ color: '#F0ACAC', fontSize: 25 }}>Scan QR Code</Text>
       </TouchableOpacity>
-      {/*<Button title="Scan Screen" onPress={() => navigation.getParent()?.navigate(Screens.CentralScanScreen)} />*/}
     </View>
   )
 }

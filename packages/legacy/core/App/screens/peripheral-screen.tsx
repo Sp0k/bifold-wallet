@@ -13,6 +13,7 @@ import QRCodeModal from '../components/modals/QRCodeModal'
 import * as InitAgent from '../utils/init_agent'
 import uuid from 'react-native-uuid'
 import { Screens, Stacks } from '../types/navigators'
+import { Button } from 'react-native'
 
 const PeripheralScreen = () => {
   const [store, dispatch] = useStore()
