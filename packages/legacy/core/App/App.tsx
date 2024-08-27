@@ -53,7 +53,7 @@ function App(sytem: Container) {
       <PeripheralProvider peripheral={new Peripheral()}>
         <CentralProvider central={new Central()}>
           <AgentProvider agent={undefined}>
-            <InvitationProvider>
+            <InvitationProvider invitation={undefined}>
               <ThemeProvider value={theme}>
                 <AnimatedComponentsProvider value={animatedComponents}>
                   <ConfigurationProvider value={defaultConfiguration}>
