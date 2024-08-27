@@ -47,6 +47,7 @@ export enum Screens {
   PeripheralScreen = 'Peripheral',
   BleScanScreen = 'BleScan',
   CentralScanScreen = 'CentralScan',
+  PeripheralConnectionStatus = 'Peripheral Connection Status',
 }
 
 export enum Stacks {
@@ -191,6 +192,7 @@ export type CentralStackParams = {
 
 export type PeripheralStackParams = {
   [Screens.PeripheralScreen]: undefined,
+  [Screens.PeripheralConnectionStatus]: undefined
 }
 
 export type ScreenOptionsType = Partial<Record<Screens, StackNavigationOptions>>

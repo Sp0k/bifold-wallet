@@ -19,6 +19,7 @@ import { useNavigation } from '@react-navigation/core'
 import QRCodeModal from '../components/modals/QRCodeModal'
 import * as InitAgent from '../utils/init_agent'
 import uuid from 'react-native-uuid';
+import { Screens, Stacks } from '../types/navigators'
 
 const PeripheralScreen = () => {
   const [store, dispatch] = useStore()
@@ -65,6 +66,7 @@ const PeripheralScreen = () => {
       peripheral.registerOnConnectedListener(({ identifier }: { identifier: string }) => {
         setIsConnected(true);
         console.log(`[PERIPHERAL] Connected: ${identifier}`);
+        navigation.getParent()?.navigate(Stacks.PeripheralStack, { screen: Screens.PeripheralConnectionStatus })
         /* ... */
       })
       peripheral.registerMessageListener(({ message }: { message: string }) => {
