@@ -25,6 +25,8 @@ const getWalletConfig = (_credentials: WalletSecret): WalletConfig => {
     }
 }
 
+export const agentEndpoint = "http://localhost:3000";
+
 export const configureAgent = <I extends InboundTransport, O extends OutboundTransport>(store: State, credentials: WalletSecret | undefined, inboundTransports?: I[], outboundTransports?: O[]): Agent | undefined => {
     if (!credentials) {
         return undefined;
@@ -36,6 +38,9 @@ export const configureAgent = <I extends InboundTransport, O extends OutboundTra
                 label: store.preferences.walletName || 'Aries Bifold',
                 walletConfig: getWalletConfig(credentials), 
                 autoUpdateStorageOnStartup: true,
+                endpoints: [
+                    agentEndpoint
+                ]
             },
             dependencies: agentDependencies,
             modules: {

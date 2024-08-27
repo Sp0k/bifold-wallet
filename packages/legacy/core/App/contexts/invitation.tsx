@@ -1,10 +1,15 @@
-import React, { createContext, useContext } from 'react'
+import React, { createContext, useContext, useState } from 'react'
 
 export interface Invitation {
   url: string
 }
 
-export const InvitationContext = createContext<Invitation | undefined>(undefined)
+export interface InvitationContextProps {
+  invitation: Invitation | undefined
+  setInvitation: (invitation: Invitation) => void
+}
+
+export const InvitationContext = createContext<InvitationContextProps | undefined>(undefined)
 
 export const useInvitation = () => {
   const context = useContext(InvitationContext)
@@ -16,8 +21,14 @@ export const useInvitation = () => {
   return context
 }
 
-const InvitationProvider = ({ children }: React.PropsWithChildren) => {
-  return <InvitationContext.Provider value={{ url: '' }}>{children}</InvitationContext.Provider>
+interface InvitationProviderProps extends React.PropsWithChildren {
+  invitation: Invitation | undefined
+} 
+
+const InvitationProvider = ({ children, invitation }: InvitationProviderProps) => {
+  const [currentInvitation, setCurrentInvitation] = useState<Invitation | undefined>(invitation)
+
+  return <InvitationContext.Provider value={{ invitation: currentInvitation,  setInvitation: setCurrentInvitation }}>{children}</InvitationContext.Provider>
 }
 
 export default InvitationProvider

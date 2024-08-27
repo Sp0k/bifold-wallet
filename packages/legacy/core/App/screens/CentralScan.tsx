@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { CentralStackParams } from '../types/navigators'
 import { useAgent } from '@credo-ts/react-hooks'
 import { useCentral } from '@animo-id/react-native-ble-didcomm'
-import { Agent } from '@credo-ts/core'
+import { Agent, ConnectionRecord, OutOfBandRecord } from '@credo-ts/core'
 import { BleInboundTransport } from '@credo-ts/transport-ble'
 import { useStore } from '../contexts/store'
 import { WalletSecret } from '../types/security'
@@ -14,6 +14,7 @@ import { View, Text, ActivityIndicator } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { Button } from 'react-native'
 import ConnectionIndicator from '../components/misc/ConnectionIndicator'
+import { Invitation, InvitationContext, useInvitation } from '../contexts/invitation'
 
 export type CentralScanProps = StackScreenProps<CentralStackParams>
 
@@ -25,6 +26,7 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
   const { t } = useTranslation()
   const qrCodeData: any | undefined = route?.params && route.params['qrCodeData']
   const [isConnected, setIsConnected] = useState<boolean>(false)
+  const { setInvitation, invitation } = useInvitation();
 
   useEffect(() => {
     console.log(qrCodeData)
@@ -52,6 +54,15 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
       })
       central.registerMessageListener(({ message }: { message: string }) => {
         console.log(`[CENTRAL] Received message: ${message}`)
+
+        const jsonData = JSON.parse(message);
+
+        if (jsonData['invitationURL']) {
+          setInvitation({
+            url: jsonData['invitationURL']
+          } as Invitation)
+        }
+
         /* Parse the JSON or fetch the URL. */
       })
       central.registerOnConnectedListener(({ identifier }: { identifier: string }) => {
@@ -101,6 +112,18 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
       initAgent()
     }
   }, [isConnected])
+
+  useEffect(() => {
+    const receiveInvitationFromUrl = async (invitationURL: string) => {
+      const { outOfBandRecord, connectionRecord } = await agent?.oob.receiveInvitationFromUrl(invitationURL) as { outOfBandRecord: OutOfBandRecord, connectionRecord: ConnectionRecord  }
+
+      console.log(outOfBandRecord.id);
+    }
+
+    if (invitation && agent) {
+      receiveInvitationFromUrl(invitation.url as string);
+    }
+  }, [invitation]);
 
   return (
     <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 200 }}>

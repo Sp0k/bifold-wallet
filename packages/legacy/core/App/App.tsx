@@ -22,7 +22,7 @@ import { initStoredVerification } from './verification'
 import { theme } from './theme'
 import { Central, CentralProvider, PeripheralProvider, Peripheral } from '@animo-id/react-native-ble-didcomm'
 import BleCommunicationPrototypeStack from './navigators/BleCommunicationPrototypeStack'
-import InvitationProvider from './contexts/invivation'
+import InvitationProvider from './contexts/invitation'
 
 initLanguages(translationResources)
 
