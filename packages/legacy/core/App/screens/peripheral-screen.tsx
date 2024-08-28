@@ -136,12 +136,6 @@ const PeripheralScreen = () => {
         >
           <Text style={{ color: '#CCF6C5', fontSize: 25 }}>Display QR Code</Text>
         </TouchableOpacity>
-        <Button
-          title="Connection Screen"
-          onPress={() => {
-            navigation.getParent()?.navigate(Screens.PeripheralConnectionStatus)
-          }}
-        />
         <QRCodeModal
           qrCodeData={qrCodeValue ?? '{}'}
           visibility={modalVisible}
