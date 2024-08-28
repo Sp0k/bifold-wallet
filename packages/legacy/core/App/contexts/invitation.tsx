@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from 'react'
 
 export interface Invitation {
-  url: string
+  payload: any
 }
 
 export interface InvitationContextProps {
@@ -23,12 +23,16 @@ export const useInvitation = () => {
 
 interface InvitationProviderProps extends React.PropsWithChildren {
   invitation: Invitation | undefined
-} 
+}
 
 const InvitationProvider = ({ children, invitation }: InvitationProviderProps) => {
   const [currentInvitation, setCurrentInvitation] = useState<Invitation | undefined>(invitation)
 
-  return <InvitationContext.Provider value={{ invitation: currentInvitation,  setInvitation: setCurrentInvitation }}>{children}</InvitationContext.Provider>
+  return (
+    <InvitationContext.Provider value={{ invitation: currentInvitation, setInvitation: setCurrentInvitation }}>
+      {children}
+    </InvitationContext.Provider>
+  )
 }
 
 export default InvitationProvider

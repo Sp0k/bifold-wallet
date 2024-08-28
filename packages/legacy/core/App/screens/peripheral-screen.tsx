@@ -13,6 +13,7 @@ import QRCodeModal from '../components/modals/QRCodeModal'
 import * as InitAgent from '../utils/init_agent'
 import uuid from 'react-native-uuid'
 import { Screens, Stacks } from '../types/navigators'
+import { Button } from 'react-native'
 
 const PeripheralScreen = () => {
   const [store, dispatch] = useStore()
@@ -24,7 +25,7 @@ const PeripheralScreen = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false)
   const [qrCodeValue, setQrCodeValue] = useState<string | undefined>(undefined)
   const [isConnected, setIsConnected] = useState<boolean>(false)
-  const [invitationSuccess, setInvitationSuccess] = useState<any | undefined>(undefined);
+  const [invitationSuccess, setInvitationSuccess] = useState<any | undefined>(undefined)
 
   useEffect(() => {
     if (modalVisible === false) {
@@ -67,7 +68,7 @@ const PeripheralScreen = () => {
         const jsonData = JSON.parse(message)
 
         if (jsonData['invitationSuccess']) {
-          console.log("The invitation was successful");
+          console.log('The invitation was successful')
           setInvitationSuccess(jsonData['invitationSuccess'])
         }
 
@@ -108,7 +109,7 @@ const PeripheralScreen = () => {
 
   useEffect(() => {
     if (invitationSuccess) {
-      console.log("Invitation success: ", invitationSuccess)
+      console.log('Invitation success: ', invitationSuccess)
     }
   }, [invitationSuccess])
 

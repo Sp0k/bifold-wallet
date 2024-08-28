@@ -1,7 +1,6 @@
 import React from 'react'
-import { Modal, TouchableWithoutFeedback, View, ActivityIndicator } from 'react-native'
+import { Modal, TouchableWithoutFeedback, View } from 'react-native'
 import QRRenderer from '../misc/QRRenderer'
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import ConnectionIndicator from '../misc/ConnectionIndicator'
 
