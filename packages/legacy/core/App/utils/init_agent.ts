@@ -38,9 +38,6 @@ export const configureAgent = <I extends InboundTransport, O extends OutboundTra
                 label: store.preferences.walletName || 'Aries Bifold',
                 walletConfig: getWalletConfig(credentials), 
                 autoUpdateStorageOnStartup: true,
-                endpoints: [
-                    agentEndpoint
-                ]
             },
             dependencies: agentDependencies,
             modules: {
@@ -52,11 +49,15 @@ export const configureAgent = <I extends InboundTransport, O extends OutboundTra
         })
 
         for (const inboundTransport of inboundTransports ?? []) {
+			console.log("Register inbound transport");
             registerInboundTransport(agent, inboundTransport);
+			console.log(agent.inboundTransports.length);
         }
 
         for (const outboundTransport of outboundTransports ?? []) {
+			console.log("Register outbound transport");
             rergisterOutboundTransport(agent, outboundTransport);
+			console.log(agent.outboundTransports.length);
         }
         
         return agent

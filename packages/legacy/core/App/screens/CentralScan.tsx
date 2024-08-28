@@ -118,6 +118,7 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
       const { outOfBandRecord, connectionRecord } = await agent?.oob.receiveInvitationFromUrl(invitationURL) as { outOfBandRecord: OutOfBandRecord, connectionRecord: ConnectionRecord  }
 
       console.log(outOfBandRecord.id);
+	  console.log(connectionRecord.id);
     }
 
     if (invitation && agent) {
