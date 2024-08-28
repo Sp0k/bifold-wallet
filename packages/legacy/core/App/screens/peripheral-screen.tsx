@@ -14,6 +14,7 @@ import * as InitAgent from '../utils/init_agent'
 import uuid from 'react-native-uuid'
 import { Screens, Stacks } from '../types/navigators'
 import { Button } from 'react-native'
+import { Invitation, useInvitation } from '../contexts/invitation'
 
 const PeripheralScreen = () => {
   const [store, dispatch] = useStore()
@@ -25,7 +26,7 @@ const PeripheralScreen = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false)
   const [qrCodeValue, setQrCodeValue] = useState<string | undefined>(undefined)
   const [isConnected, setIsConnected] = useState<boolean>(false)
-  const [invitationSuccess, setInvitationSuccess] = useState<any | undefined>(undefined)
+  const { invitation, setInvitation } = useInvitation()
 
   useEffect(() => {
     if (modalVisible === false) {
@@ -69,7 +70,7 @@ const PeripheralScreen = () => {
 
         if (jsonData['invitationSuccess']) {
           console.log('The invitation was successful')
-          setInvitationSuccess(jsonData['invitationSuccess'])
+          setInvitation({ payload: jsonData['invitationSuccess'] } as Invitation)
         }
 
         console.log(`[PERIPHERAL] Received message: ${message}`)
@@ -108,10 +109,10 @@ const PeripheralScreen = () => {
   }, [isConnected])
 
   useEffect(() => {
-    if (invitationSuccess) {
-      console.log('Invitation success: ', invitationSuccess)
+    if (invitation) {
+      console.log('Invitation success: ', invitation)
     }
-  }, [invitationSuccess])
+  }, [invitation])
 
   usePeripheralShutdownOnUnmount()
 
@@ -135,6 +136,12 @@ const PeripheralScreen = () => {
         >
           <Text style={{ color: '#CCF6C5', fontSize: 25 }}>Display QR Code</Text>
         </TouchableOpacity>
+        <Button
+          title="Connection Screen"
+          onPress={() => {
+            navigation.getParent()?.navigate(Screens.PeripheralConnectionStatus)
+          }}
+        />
         <QRCodeModal
           qrCodeData={qrCodeValue ?? '{}'}
           visibility={modalVisible}
