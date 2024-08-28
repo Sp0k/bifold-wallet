@@ -26,7 +26,7 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
   const { t } = useTranslation()
   const qrCodeData: any | undefined = route?.params && route.params['qrCodeData']
   const [isConnected, setIsConnected] = useState<boolean>(false)
-  const { setInvitation, invitation } = useInvitation();
+  const  [invitationURL, setInvitationURL] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     console.log(qrCodeData)
@@ -58,9 +58,7 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
         const jsonData = JSON.parse(message);
 
         if (jsonData['invitationURL']) {
-          setInvitation({
-            url: jsonData['invitationURL']
-          } as Invitation)
+          setInvitationURL(jsonData['invitationURL'])
         }
 
         /* Parse the JSON or fetch the URL. */
@@ -115,16 +113,25 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
 
   useEffect(() => {
     const receiveInvitationFromUrl = async (invitationURL: string) => {
-      const { outOfBandRecord, connectionRecord } = await agent?.oob.receiveInvitationFromUrl(invitationURL) as { outOfBandRecord: OutOfBandRecord, connectionRecord: ConnectionRecord  }
+      const { outOfBandRecord, connectionRecord } = await agent?.oob.receiveInvitationFromUrl(invitationURL, { autoAcceptConnection: true }) as { outOfBandRecord: OutOfBandRecord, connectionRecord: ConnectionRecord  }
 
-      console.log(outOfBandRecord.id);
-	  console.log(connectionRecord.id);
+      console.log(`Out of band Record: ${outOfBandRecord.id}`);
+      console.log(`Connection Record ID: ${connectionRecord.id}`);
+
+      const invitationSuccess = {
+        invitationSuccess: {
+          outOfBandRecord: outOfBandRecord,
+          connectionRecord: connectionRecord
+        }
+      }
+
+      central.sendMessage(JSON.stringify(invitationSuccess))
     }
 
-    if (invitation && agent) {
-      receiveInvitationFromUrl(invitation.url as string);
+    if (invitationURL && agent) {
+      receiveInvitationFromUrl(invitationURL);
     }
-  }, [invitation]);
+  }, [invitationURL]);
 
   return (
     <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 200 }}>
