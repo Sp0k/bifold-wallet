@@ -50,7 +50,7 @@ const PeripheralConnectionStatus: React.FC<PeripheralConnectionStatusProps> = ({
 
   useEffect(() => {
     if (invitation) setModalVisible(true)
-  }, [])
+  }, [invitation])
 
   // useEffect(() => {
   //   let newInvite = JSON.parse(
@@ -107,7 +107,7 @@ const PeripheralConnectionStatus: React.FC<PeripheralConnectionStatusProps> = ({
 
   return (
     <View style={{ alignItems: 'center' }}>
-      <TouchableOpacity
+      {invitation && <TouchableOpacity
         style={{
           width: 250,
           height: 250,
@@ -123,7 +123,7 @@ const PeripheralConnectionStatus: React.FC<PeripheralConnectionStatusProps> = ({
         }}
       >
         <Text style={{ color: '#CCF6C5', fontSize: 25 }}>Show Invitation</Text>
-      </TouchableOpacity>
+      </TouchableOpacity>}
       <InvitationModal visibility={modalVisible} onPress={() => setModalVisible(!modalVisible)} />
     </View>
   )
