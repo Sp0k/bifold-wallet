@@ -125,6 +125,7 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
         }
       }
 
+      // For DEMO purpose, we send a message, via Central.
       central.sendMessage(JSON.stringify(invitationSuccess))
     }
 
