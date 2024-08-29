@@ -1,4 +1,4 @@
-import { Agent, ConnectionsModule, InboundTransport, KeyDerivationMethod, OutboundTransport, OutOfBandApi, WalletConfig } from "@credo-ts/core";
+import { Agent, ConnectionsModule, InboundTransport, KeyDerivationMethod, OutboundTransport, WalletConfig } from "@credo-ts/core";
 import { EventTypes } from "../constants";
 import { DeviceEventEmitter } from "react-native";
 import { BifoldError } from "../types/error";
@@ -27,7 +27,7 @@ const getWalletConfig = (_credentials: WalletSecret): WalletConfig => {
 
 export const agentEndpoint = "http://localhost:3000";
 
-export const configureAgent = <I extends InboundTransport, O extends OutboundTransport>(store: State, credentials: WalletSecret | undefined, inboundTransports?: I[], outboundTransports?: O[]): Agent | undefined => {
+export const configureAgent = <I extends InboundTransport, O extends OutboundTransport>(store: State, credentials: WalletSecret | undefined, advancedConfiguration?: (agent: Agent) => void, inboundTransports?: I[], outboundTransports?: O[]): Agent | undefined => {
     if (!credentials) {
         return undefined;
     }
@@ -58,6 +58,10 @@ export const configureAgent = <I extends InboundTransport, O extends OutboundTra
 			console.log("Register outbound transport");
             rergisterOutboundTransport(agent, outboundTransport);
 			console.log(agent.outboundTransports.length);
+        }
+
+        if (advancedConfiguration) {
+            advancedConfiguration(agent);
         }
         
         return agent

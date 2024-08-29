@@ -1,7 +1,7 @@
 import { usePeripheral, usePeripheralShutdownOnUnmount } from '@animo-id/react-native-ble-didcomm'
 import { useEffect, useState } from 'react'
 import { Text, View, TouchableOpacity } from 'react-native'
-import { Agent } from '@credo-ts/core'
+import { Agent, ConnectionEventTypes, ConnectionStateChangedEvent } from '@credo-ts/core'
 import { WalletSecret } from '../types/security'
 import { useStore } from '../contexts/store'
 import { useTranslation } from 'react-i18next'
@@ -93,7 +93,13 @@ const PeripheralScreen = () => {
 
   useEffect(() => {
     const configureAgent = (credentials: WalletSecret | undefined): Agent | undefined => {
-      return InitAgent.configureAgent(store, credentials, undefined, [new BleOutboundTransport(peripheral)])
+      return InitAgent.configureAgent(store, credentials, (agent: Agent) => {
+        agent.events.on<ConnectionStateChangedEvent>(
+            ConnectionEventTypes.ConnectionStateChanged, ({ payload }) => {
+                console.log('DIDComm connected from peripheral')
+                console.log(payload)
+            });
+      }, undefined, [new BleOutboundTransport(peripheral)])
     }
 
     const initAgent = async (): Promise<void> => {

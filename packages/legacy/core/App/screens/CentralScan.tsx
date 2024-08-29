@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { CentralStackParams } from '../types/navigators'
 import { useAgent } from '@credo-ts/react-hooks'
 import { useCentral } from '@animo-id/react-native-ble-didcomm'
-import { Agent, Connection, ConnectionRecord, OutOfBandRecord } from '@credo-ts/core'
+import { Agent, Connection, ConnectionEventTypes, ConnectionRecord, ConnectionStateChangedEvent, OutOfBandRecord } from '@credo-ts/core'
 import { BleInboundTransport } from '@credo-ts/transport-ble'
 import { useStore } from '../contexts/store'
 import { WalletSecret } from '../types/security'
@@ -96,7 +96,15 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
 
   useEffect(() => {
     const configureAgent = (credentials: WalletSecret | undefined): Agent | undefined => {
-      return InitAgent.configureAgent(store, credentials, [new BleInboundTransport(central)])
+      return InitAgent.configureAgent(store, credentials,
+      (agent: Agent) => {
+        agent.events.on<ConnectionStateChangedEvent>(
+            ConnectionEventTypes.ConnectionStateChanged, ({ payload }) => {
+                console.log('DIDComm connected from central')
+                console.log(payload)
+            });
+          }
+        , [new BleInboundTransport(central)])
     }
 
     const initAgent = async () => {
@@ -113,7 +121,7 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
 
   useEffect(() => {
     const receiveInvitationFromUrl = async (invitationURL: string) => {
-      const { outOfBandRecord, connectionRecord } = await agent?.oob.receiveInvitationFromUrl(invitationURL, { autoAcceptConnection: true }) as { outOfBandRecord: OutOfBandRecord, connectionRecord: ConnectionRecord  }
+      const { outOfBandRecord, connectionRecord } = await agent?.oob.receiveInvitationFromUrl(invitationURL, { autoAcceptConnection: true, autoAcceptInvitation: true }) as { outOfBandRecord: OutOfBandRecord, connectionRecord: ConnectionRecord  }
 
       console.log(`Out of band Record: ${outOfBandRecord.id}`);
       console.log(`Connection Record ID: ${connectionRecord.id}`);
