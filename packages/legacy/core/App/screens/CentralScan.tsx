@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { CentralStackParams } from '../types/navigators'
 import { useAgent } from '@credo-ts/react-hooks'
 import { useCentral } from '@animo-id/react-native-ble-didcomm'
-import { Agent, ConnectionRecord, OutOfBandRecord } from '@credo-ts/core'
+import { Agent, Connection, ConnectionRecord, OutOfBandRecord } from '@credo-ts/core'
 import { BleInboundTransport } from '@credo-ts/transport-ble'
 import { useStore } from '../contexts/store'
 import { WalletSecret } from '../types/security'
@@ -26,7 +26,7 @@ const CentralScan: React.FC<CentralScanProps> = ({ navigation, route }) => {
   const { t } = useTranslation()
   const qrCodeData: any | undefined = route?.params && route.params['qrCodeData']
   const [isConnected, setIsConnected] = useState<boolean>(false)
-  const  [invitationURL, setInvitationURL] = useState<string | undefined>(undefined)
+  const [invitationURL, setInvitationURL] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     console.log(qrCodeData)

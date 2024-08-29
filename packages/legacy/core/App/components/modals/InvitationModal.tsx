@@ -10,6 +10,10 @@ export interface InvitationModalProps {
 
 const InvitationModal = ({ visibility, onPress }: InvitationModalProps) => {
   const { invitation } = useInvitation()
+  const connectionId = invitation?.payload['connectionRecord']['id']
+  const outOfBandRecordId = invitation?.payload['outOfBandRecord']['id']
+  const outOfBandRecordCreatedAt = invitation?.payload['outOfBandRecord']['createdAt']
+  const outOfBandRecordLabel = invitation?.payload['outOfBandRecord']['outOfBandInvitation']['label']
 
   return (
     <Modal
@@ -34,16 +38,16 @@ const InvitationModal = ({ visibility, onPress }: InvitationModalProps) => {
             You received an invitation!
           </Text>
           <Text style={{ color: 'white', fontSize: 16 }}>
-            Connect ID: {invitation?.payload['connectionRecord']['id']}
+            Connect ID: {connectionId}
           </Text>
           <Text style={{ color: 'white', fontSize: 16 }}>
-            Invitation ID: {invitation?.payload['outOfBandRecord']['id']}
+            Invitation ID: {outOfBandRecordId}
           </Text>
           <Text style={{ color: 'white', fontSize: 16 }}>
-            Created at: {invitation?.payload['outOfBandRecord']['createdAt']}
+            Created at: {outOfBandRecordCreatedAt}
           </Text>
           <Text style={{ color: 'white', fontSize: 16 }}>
-            Label: {invitation?.payload['outOfBandRecord']['outOfBandInvitation']['label']}
+            Label: {outOfBandRecordLabel}
           </Text>
         </View>
       </TouchableWithoutFeedback>

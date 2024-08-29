@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { Text, View, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { agentEndpoint } from '../utils/init_agent'
 import { usePeripheral } from '@animo-id/react-native-ble-didcomm'
-import { OutOfBandRecord } from '@credo-ts/core'
+import { ConnectionEventTypes, ConnectionStateChangedEvent, OutOfBandRecord } from '@credo-ts/core'
 
 import InvitationModal from '../components/modals/InvitationModal'
 import { Invitation, useInvitation } from '../contexts/invitation'
@@ -15,7 +15,7 @@ export type PeripheralConnectionStatusProps = StackScreenProps<PeripheralStackPa
 const PeripheralConnectionStatus: React.FC<PeripheralConnectionStatusProps> = ({ navigation, route }) => {
   const { agent } = useAgent()
   const { peripheral } = usePeripheral()
-  const { invitation, setInvitation } = useInvitation()
+  const { invitation } = useInvitation()
   const [modalVisible, setModalVisible] = useState<boolean>(false)
 
   useEffect(() => {
